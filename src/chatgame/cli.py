@@ -64,11 +64,13 @@ def web() -> None:
               help="交互模式：自动安装缺失的前端依赖")
 @click.option("-I", "--no-interactive", "interactive", flag_value=False,
               help="非交互模式：只检查，不安装")
-def setup(interactive: bool | None) -> None:
+@click.option("--frontend-dir", type=click.Path(path_type=str), default=None,
+              help="前端源码目录；默认从当前目录推断")
+def setup(interactive: bool | None, frontend_dir: str | None) -> None:
     """检查并安装所有依赖（Python 环境 + Node.js + 前端包）。"""
     from chatgame.web.setup import run_setup
     install_frontend = interactive is True
-    ok = run_setup(install_frontend=install_frontend)
+    ok = run_setup(install_frontend=install_frontend, frontend_dir=frontend_dir)
     if not ok:
         sys.exit(1)
 

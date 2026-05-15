@@ -18,7 +18,7 @@ chatgame --help
 chatgame games
 chatgame solve   <IMAGE>  [-g] [-n] [-o] [-v]
 
-chatgame web setup   [-i | -I]
+chatgame web setup   [-i | -I] [--frontend-dir]
 chatgame web build   [--frontend-dir] [--dist-dir] [--clean]
 chatgame web serve   [--backend-only | --frontend-only] [--port] [--frontend-port] [--dev] [--frontend-dir] [--assets-dir]
 chatgame web status  [--port] [--frontend-port] [--dev]
@@ -77,10 +77,11 @@ chatgame solve level.png -g other-game
 |------|------|
 | `-i` | 交互模式：自动 `npm install` 安装缺失的前端依赖 |
 | `-I` | 非交互：只检查，不安装（默认） |
+| `--frontend-dir` | 显式指定前端源码目录 |
 
 ```bash
-chatgame web setup       # 检查，不安装
-chatgame web setup -i    # 检查 + 自动安装缺失依赖
+chatgame web setup                         # 检查，不安装
+chatgame web setup -i --frontend-dir ./web # 检查 + 自动安装缺失依赖
 ```
 
 ### `chatgame web build`

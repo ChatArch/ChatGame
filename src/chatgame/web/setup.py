@@ -8,10 +8,7 @@ from pathlib import Path
 import click
 
 from chatgame.web.node import MIN_NODE_MAJOR, detect as detect_node, is_ok as node_ok, run_npm
-
-# chatgame 根目录（src/chatgame/web/setup.py → 上三级）
-_REPO_ROOT = Path(__file__).resolve().parents[3]
-_WEB_DIR   = _REPO_ROOT / "web"
+from chatgame.web.paths import resolve_frontend_dir
 
 
 # ── 彩色输出辅助 ──────────────────────────────────────────────────────────────
@@ -85,14 +82,18 @@ def check_node() -> bool:
 
 # ── 前端依赖检查 ──────────────────────────────────────────────────────────────
 
-def check_frontend(install: bool = False) -> bool:
+def check_frontend(install: bool = False, frontend_dir: str | None = None) -> bool:
     _head("前端依赖")
 
-    if not _WEB_DIR.exists():
-        _fail(f"前端目录不存在：{_WEB_DIR}")
+    try:
+        web_dir = resolve_frontend_dir(frontend_dir=frontend_dir)
+    except FileNotFoundError as exc:
+        _fail(str(exc))
         return False
 
-    node_modules = _WEB_DIR / "node_modules"
+    _info(f"前端源码目录：{web_dir}")
+
+    node_modules = web_dir / "node_modules"
     if node_modules.exists():
         _ok("node_modules 已安装")
         return True
@@ -100,7 +101,7 @@ def check_frontend(install: bool = False) -> bool:
     if install:
         _info("正在运行 npm install …")
         r = run_npm(["install", "--registry", "https://registry.npmmirror.com"],
-                    cwd=_WEB_DIR)
+                    cwd=web_dir)
         if r.returncode == 0:
             _ok("npm install 完成")
             return True
@@ -115,11 +116,11 @@ def check_frontend(install: bool = False) -> bool:
 
 # ── 主入口 ────────────────────────────────────────────────────────────────────
 
-def run_setup(install_frontend: bool = False) -> bool:
+def run_setup(install_frontend: bool = False, frontend_dir: str | None = None) -> bool:
     """执行全量环境检查，返回是否全部通过。"""
     py_ok   = check_python()
     nd_ok   = check_node()
-    fe_ok   = check_frontend(install=install_frontend)
+    fe_ok   = check_frontend(install=install_frontend, frontend_dir=frontend_dir)
 
     click.echo()
     if py_ok and nd_ok and fe_ok:

@@ -27,6 +27,58 @@ jobs:
       - name: Build package
         run: python -m build
 
+  install-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+
+      - name: Install frontend dependencies
+        working-directory: web
+        run: npm install
+
+      - name: Verify setup in installed environment
+        run: chatgame web setup -I --frontend-dir "$GITHUB_WORKSPACE/web"
+
+      - name: Build frontend into target directory
+        run: chatgame web build --frontend-dir "$GITHUB_WORKSPACE/web" --dist-dir "$RUNNER_TEMP/chatgame-web-dist" --clean
+
+      - name: Start installed web server
+        run: |
+          chatgame web serve --assets-dir "$RUNNER_TEMP/chatgame-web-dist" --port 8123 > "$RUNNER_TEMP/chatgame-serve.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/chatgame-serve.pid"
+
+      - name: Probe installed web server
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8123/ >/dev/null && curl -fsS http://127.0.0.1:8123/api/games >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/chatgame-serve.log"
+          exit 1
+
+      - name: Stop installed web server
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/chatgame-serve.pid" ]; then
+            kill "$(cat "$RUNNER_TEMP/chatgame-serve.pid")" || true
+          fi
+
   docs:
     runs-on: ubuntu-latest
     steps:
