@@ -10,7 +10,7 @@ Currently supports: **Cow Puzzle** (color-region constraint · unique row/col ·
 
 ```bash
 # Install
-pip install -e ".[dev]"
+pip install chatgame
 
 # Solve a screenshot (print answer)
 chatgame solve level24.png
@@ -28,7 +28,7 @@ chatgame solve level24.png -o solved.png
 | Solve screenshot, print click order | `chatgame solve <image>` |
 | Save annotated image (numbers on grid) | `chatgame solve <image> -o <output>` |
 | List supported games | `chatgame games` |
-| Check & install dependencies | `chatgame web setup -i` |
+| Check Web runtime | `chatgame web setup` |
 | Launch Web UI | `chatgame web serve` |
 
 ---
