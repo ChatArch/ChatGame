@@ -15,6 +15,7 @@ _GAMES: dict[str, str] = {
 # ── 顶层命令组 ────────────────────────────────────────────────────────────────
 
 @click.group()
+@click.version_option(package_name="chatgame")
 def main() -> None:
     """chatgame — 游戏谜题求解工具。"""
 
