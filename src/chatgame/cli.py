@@ -78,6 +78,8 @@ def setup(interactive: bool | None, frontend_dir: str | None) -> None:
 @web.command()
 @click.option("--backend-only",  is_flag=True, help="仅启动后端")
 @click.option("--frontend-only", is_flag=True, help="仅启动前端")
+@click.option("--host",          default="127.0.0.1", show_default=True,
+              help="服务监听地址；局域网/IP 访问可设为 0.0.0.0")
 @click.option("--port",          default=8000, show_default=True, help="后端端口")
 @click.option("--frontend-port", default=5173, show_default=True, help="前端端口")
 @click.option("--dev", is_flag=True, help="开发模式：启动 Vite dev server")
@@ -88,6 +90,7 @@ def setup(interactive: bool | None, frontend_dir: str | None) -> None:
 def serve(
     backend_only: bool,
     frontend_only: bool,
+    host: str,
     port: int,
     frontend_port: int,
     dev: bool,
@@ -101,6 +104,7 @@ def serve(
         frontend_only=frontend_only,
         backend_port=port,
         frontend_port=frontend_port,
+        host=host,
         dev=dev,
         frontend_dir=frontend_dir,
         assets_dir=assets_dir,
@@ -120,13 +124,15 @@ def build(frontend_dir: str | None, dist_dir: str | None, clean: bool) -> None:
 
 
 @web.command()
+@click.option("--host",          default="127.0.0.1", show_default=True,
+              help="探测地址；服务使用 --host 0.0.0.0 时可同样传入")
 @click.option("--port",          default=8000, show_default=True, help="后端端口")
 @click.option("--frontend-port", default=5173, show_default=True, help="前端端口")
 @click.option("--dev", is_flag=True, help="按开发模式检查前后端两个端口")
-def status(port: int, frontend_port: int, dev: bool) -> None:
+def status(host: str, port: int, frontend_port: int, dev: bool) -> None:
     """检查各服务运行状态。"""
     from chatgame.web.serve import status as _status
-    _status(backend_port=port, frontend_port=frontend_port, dev=dev)
+    _status(backend_port=port, frontend_port=frontend_port, dev=dev, host=host)
 
 
 if __name__ == "__main__":

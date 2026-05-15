@@ -37,6 +37,8 @@ def test_web_serve_invokes_runtime(mocker):
             "/tmp/frontend",
             "--assets-dir",
             "/tmp/dist",
+            "--host",
+            "0.0.0.0",
             "--port",
             "9000",
             "--frontend-port",
@@ -50,6 +52,7 @@ def test_web_serve_invokes_runtime(mocker):
         frontend_only=False,
         backend_port=9000,
         frontend_port=5174,
+        host="0.0.0.0",
         dev=True,
         frontend_dir="/tmp/frontend",
         assets_dir="/tmp/dist",
@@ -59,7 +62,10 @@ def test_web_serve_invokes_runtime(mocker):
 def test_web_status_invokes_runtime(mocker):
     status = mocker.patch("chatgame.web.serve.status")
 
-    result = CliRunner().invoke(main, ["web", "status", "--port", "8123", "--frontend-port", "5175", "--dev"])
+    result = CliRunner().invoke(
+        main,
+        ["web", "status", "--host", "0.0.0.0", "--port", "8123", "--frontend-port", "5175", "--dev"],
+    )
 
     assert result.exit_code == 0
-    status.assert_called_once_with(backend_port=8123, frontend_port=5175, dev=True)
+    status.assert_called_once_with(backend_port=8123, frontend_port=5175, dev=True, host="0.0.0.0")

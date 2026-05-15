@@ -25,7 +25,7 @@ pip install -e ".[dev]" -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 ```bash
 chatgame --version
-# chatgame, version 0.1.2
+# chatgame, version 0.1.3
 ```
 
 ---
@@ -83,7 +83,7 @@ chatgame web setup -i --frontend-dir ./web  # 开发态检查 + 自动安装缺�
 
 ```
 ── Python 环境
-  ✓  chatgame 0.1.2
+  ✓  chatgame 0.1.3
   ✓  fastapi 0.136.1
   ✓  uvicorn 0.47.0
 
@@ -113,6 +113,9 @@ chatgame web serve --backend-only
 # 自定义端口
 chatgame web serve --port 9000
 
+# 允许局域网/IP 访问
+chatgame web serve --host 0.0.0.0 --port 8000
+
 # 开发态：显式使用源码目录启动 Vite dev server
 chatgame web serve --dev --frontend-dir ./web
 ```
@@ -121,7 +124,7 @@ chatgame web serve --dev --frontend-dir ./web
 
 ```bash
 chatgame web status
-# Web/API http://localhost:8000   running ✓
+# Web/API http://127.0.0.1:8000   running ✓
 ```
 
 ---

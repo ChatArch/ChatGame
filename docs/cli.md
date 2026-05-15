@@ -20,8 +20,8 @@ chatgame solve   <IMAGE>  [-g] [-n] [-o] [-v]
 
 chatgame web setup   [-i | -I] [--frontend-dir]
 chatgame web build   [--frontend-dir] [--dist-dir] [--clean]
-chatgame web serve   [--backend-only | --frontend-only] [--port] [--frontend-port] [--dev] [--frontend-dir] [--assets-dir]
-chatgame web status  [--port] [--frontend-port] [--dev]
+chatgame web serve   [--backend-only | --frontend-only] [--host] [--port] [--frontend-port] [--dev] [--frontend-dir] [--assets-dir]
+chatgame web status  [--host] [--port] [--frontend-port] [--dev]
 ```
 
 ---
@@ -108,6 +108,7 @@ chatgame web build --frontend-dir ./web --dist-dir ./dist
 |------|------|------|
 | `--backend-only` | — | 仅启动后端 |
 | `--frontend-only` | — | 仅启动前端 |
+| `--host` | `127.0.0.1` | 服务监听地址；局域网/IP 访问可设为 `0.0.0.0` |
 | `--port` | `8000` | 后端端口 |
 | `--frontend-port` | `5173` | 前端端口 |
 | `--dev` | — | 开发模式：启动 Vite dev server |
@@ -121,8 +122,11 @@ chatgame web serve
 # 服务指定目录中的静态资源
 chatgame web serve --assets-dir ./.chatgame/web-dist
 
+# 允许其他机器通过本机 IP 访问
+chatgame web serve --host 0.0.0.0 --port 8000
+
 # 开发态：显式启动 Vite
-chatgame web serve --dev --frontend-dir ./web
+chatgame web serve --dev --frontend-dir ./web --host 0.0.0.0
 ```
 
 ### `chatgame web status`
@@ -130,7 +134,7 @@ chatgame web serve --dev --frontend-dir ./web
 
 ```bash
 $ chatgame web status
-  Web/API http://localhost:8000   running ✓
+  Web/API http://127.0.0.1:8000   running ✓
 ```
 
 ---
