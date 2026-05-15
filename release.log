@@ -1,0 +1,8 @@
+- time: 2026-05-15T20:37:20Z
+  version: 0.1.1
+  tag: v0.1.1
+  commit: 5e1e62ff57cf7bb8fb115a4ab888a954d75bcc72
+  operator: OpenAI Codex
+  summary: Release 0.1.1 with installed-mode packaged web assets, friendly web build/setup behavior, and lazy CLI solver imports.
+  pr: https://github.com/ChatArch/ChatGame/pull/2
+  publish_run: https://github.com/ChatArch/ChatGame/actions/runs/25940117065
