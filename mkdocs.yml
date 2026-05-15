@@ -1,14 +1,27 @@
-site_name: chatgame 文档
-site_url: https://OWNER.github.io/REPO
-repo_url: https://github.com/OWNER/REPO
+site_name: chatgame
+site_description: 游戏谜题截图求解工具 — 从截图到答案，一条命令
+site_url: https://github.com/zhihong/ChatGame
+repo_url: https://github.com/zhihong/ChatGame
+repo_name: ChatGame
+
 theme:
   name: material
   language: zh
+  palette:
+    - scheme: default
+      primary: blue
+      accent: light blue
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - content.code.copy
+
 nav:
   - 首页: index.md
-  - CLI 用法: cli.md
-  - 游戏文档:
-    - 牛牛摆放谜题:
-      - 玩法说明: games/cow-puzzle/rules.md
-      - 游戏攻略: games/cow-puzzle/strategy.md
+  - 快速上手: quickstart.md
+  - CLI 参考: cli.md
+  - 游戏库:
+      - 牛牛摆放谜题:
+          - 玩法说明: games/cow-puzzle/rules.md
+          - 游戏攻略: games/cow-puzzle/strategy.md
   - English: index.en.md
