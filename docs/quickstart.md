@@ -25,7 +25,7 @@ pip install -e ".[dev]" -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 ```bash
 chatgame --version
-# chatgame, version 0.1.1
+# chatgame, version 0.1.2
 ```
 
 ---
@@ -83,7 +83,7 @@ chatgame web setup -i --frontend-dir ./web  # 开发态检查 + 自动安装缺�
 
 ```
 ── Python 环境
-  ✓  chatgame 0.1.1
+  ✓  chatgame 0.1.2
   ✓  fastapi 0.136.1
   ✓  uvicorn 0.47.0
 

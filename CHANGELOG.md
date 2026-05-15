@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.2 - 2026-05-16
+
+### Added
+
+### Changed
+
+- Run CI `test` and `install-smoke` on Python 3.10 to match the declared minimum supported version.
+- Update quickstart guidance to focus on Python version requirements and clean virtual environments instead of a conda-specific flow.
+
+### Fixed
+
+- Keep installed-mode `chatgame web setup` focused on Web runtime requirements so Python 3.10 users are not blocked by `scikit-learn` / `scipy` ABI issues in optional solver dependencies.
+
 ## 0.1.1 - 2026-05-16
 
 ### Added
