@@ -19,9 +19,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from PIL import Image
 
-from chatgame.games.cow_puzzle.parse import parse
-from chatgame.games.cow_puzzle.solver import solve, verify
-from chatgame.games.cow_puzzle.__main__ import _annotate, _color_name
 from chatgame.web.paths import has_static_assets, package_static_dir
 
 app = FastAPI(title="chatgame API", version="0.1.2")
@@ -45,6 +42,25 @@ _GAMES = {
 }
 
 _DOCS_DIR = Path(__file__).resolve().parents[2] / "docs" / "games"
+
+_COLOR_TABLE: list[tuple[tuple[int, int, int], str]] = [
+    ((128, 185, 254), "蓝"),
+    ((245, 154, 189), "粉"),
+    ((253, 130, 148), "热粉"),
+    ((185, 127, 237), "紫"),
+    ((246, 206,  92), "黄"),
+    (( 67, 214, 185), "青"),
+    ((180, 218, 131), "绿"),
+    ((172, 197, 228), "灰蓝"),
+]
+
+
+def _color_name(rgb: list[int]) -> str:
+    r, g, b = rgb
+    return min(
+        _COLOR_TABLE,
+        key=lambda t: (r - t[0][0]) ** 2 + (g - t[0][1]) ** 2 + (b - t[0][2]) ** 2,
+    )[1]
 
 
 def _resolve_assets_dir() -> Path | None:
@@ -121,6 +137,9 @@ async def solve_puzzle(
 
     try:
         t0 = time.perf_counter()
+        from chatgame.games.cow_puzzle.parse import parse
+        from chatgame.games.cow_puzzle.solver import solve, verify
+
         color_ids, samples, bbox = parse(tmp_path, n=n)
         actual_n = color_ids.shape[0]
 

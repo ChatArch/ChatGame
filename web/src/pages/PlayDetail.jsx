@@ -3,6 +3,16 @@ import { useParams, useSearchParams, Link } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import styles from './LibraryDetail.module.css'
+import gameStyles from './PlayGame.module.css'
+import {
+  REGION_COLORS,
+  createEmptyMarks,
+  evaluateBoard,
+  getLevelBySize,
+  levels,
+  marksFromSolution,
+  toggleMark,
+} from '../games/cowPuzzle'
 
 export default function PlayDetail() {
   const { id } = useParams()
@@ -10,14 +20,35 @@ export default function PlayDetail() {
   const tab = searchParams.get('tab') || 'rules'
   const [docs, setDocs] = useState(null)
   const [loadingDocs, setLoadingDocs] = useState(true)
+  const [level, setLevel] = useState(() => getLevelBySize(8))
+  const [marks, setMarks] = useState(() => createEmptyMarks(8))
 
   useEffect(() => {
-    setLoadingDocs(true)
     fetch(`/api/games/${id}/docs`)
       .then(r => r.json())
       .then(d => { setDocs(d); setLoadingDocs(false) })
       .catch(() => setLoadingDocs(false))
   }, [id])
+
+  const result = evaluateBoard(level, marks)
+
+  function switchSize(size) {
+    const nextLevel = getLevelBySize(size)
+    setLevel(nextLevel)
+    setMarks(createEmptyMarks(nextLevel.size))
+  }
+
+  function restart() {
+    setMarks(createEmptyMarks(level.size))
+  }
+
+  function showSolution() {
+    setMarks(marksFromSolution(level.size, level.solution))
+  }
+
+  function onCellClick(row, col) {
+    setMarks(current => toggleMark(current, row, col))
+  }
 
   return (
     <div className={styles.wrap}>
@@ -43,11 +74,88 @@ export default function PlayDetail() {
         )}
 
         {tab === 'start' && (
-          <div>
-            <div className={styles.playHeader}>
-              <button className="btn-primary" disabled style={{ marginBottom: '16px' }}>开始游戏 (敬请期待)</button>
-            </div>
-            <p className={styles.muted}>在线游玩入口预留中，当前先保留按钮位置。</p>
+          <div className={gameStyles.gameShell}>
+            <section className={gameStyles.stage}>
+              <div className={gameStyles.toolbar}>
+                <div className={gameStyles.sizeGroup} aria-label="棋盘尺寸">
+                  {levels.map(item => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={`${gameStyles.sizeButton} ${item.id === level.id ? gameStyles.sizeButtonActive : ''}`}
+                      onClick={() => switchSize(item.size)}
+                    >
+                      {item.size}x{item.size}
+                    </button>
+                  ))}
+                </div>
+                <div className={gameStyles.actions}>
+                  <button type="button" className="btn-ghost" onClick={restart}>重开</button>
+                  <button type="button" className="btn-primary" onClick={showSolution}>演示解</button>
+                </div>
+              </div>
+
+              <div
+                className={`${gameStyles.board} ${result.solved ? gameStyles.solved : ''}`}
+                style={{ '--size': level.size }}
+                aria-label={`${level.name} 奶牛摆放棋盘`}
+              >
+                {level.grid.map((row, rowIndex) =>
+                  row.map((region, colIndex) => {
+                    const selected = marks[rowIndex][colIndex]
+                    const key = `${rowIndex}:${colIndex}`
+                    const conflict = result.conflicts.has(key)
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        className={`${gameStyles.cell} ${conflict ? gameStyles.conflict : ''}`}
+                        style={{ backgroundColor: REGION_COLORS[region % REGION_COLORS.length] }}
+                        onClick={() => onCellClick(rowIndex, colIndex)}
+                        aria-pressed={selected}
+                        aria-label={`第 ${rowIndex + 1} 行第 ${colIndex + 1} 列，区域 ${region + 1}`}
+                      >
+                        <span className={gameStyles.regionLabel}>{region + 1}</span>
+                        {selected && <span className={gameStyles.mark} aria-hidden="true" />}
+                      </button>
+                    )
+                  }),
+                )}
+              </div>
+            </section>
+
+            <aside className={gameStyles.sidePanel}>
+              <h2 className={gameStyles.statusTitle}>{level.name} 局面</h2>
+              <div className={gameStyles.statusGrid}>
+                <div className={gameStyles.metric}>
+                  <span className={gameStyles.metricValue}>{result.selected}</span>
+                  <span className={gameStyles.metricLabel}>已放置</span>
+                </div>
+                <div className={gameStyles.metric}>
+                  <span className={gameStyles.metricValue}>{result.remaining}</span>
+                  <span className={gameStyles.metricLabel}>剩余</span>
+                </div>
+              </div>
+
+              {result.solved ? (
+                <div className={gameStyles.successBox}>已满足区域、行列与相邻约束，当前局面完成。</div>
+              ) : result.conflicts.size > 0 ? (
+                <div className={gameStyles.conflictBox}>存在重复行列、重复区域或相邻奶牛，冲突格已标红。</div>
+              ) : (
+                <p className={gameStyles.message}>每个颜色区域、每行、每列各放一头，任意两头不能相邻。</p>
+              )}
+
+              <div className={gameStyles.legend} aria-label="区域色块">
+                {Array.from({ length: level.size }, (_, index) => (
+                  <span
+                    key={index}
+                    className={gameStyles.swatch}
+                    style={{ backgroundColor: REGION_COLORS[index % REGION_COLORS.length] }}
+                    title={`区域 ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </aside>
           </div>
         )}
       </div>
