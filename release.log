@@ -6,3 +6,10 @@
   summary: Release 0.1.1 with installed-mode packaged web assets, friendly web build/setup behavior, and lazy CLI solver imports.
   pr: https://github.com/ChatArch/ChatGame/pull/2
   publish_run: https://github.com/ChatArch/ChatGame/actions/runs/25940117065
+- time: 2026-05-15T20:56:00Z
+  version: 0.1.2
+  tag: v0.1.2
+  commit: 56d1bdc0e1dfcbe483cd99368b4bbe2770d198b0
+  operator: OpenAI Codex
+  summary: Release 0.1.2 with Python 3.10 web setup compatibility and CI/install-smoke coverage on the minimum supported Python.
+  publish_run: https://github.com/ChatArch/ChatGame/actions/runs/25940942467
