@@ -19,7 +19,18 @@ def _head(msg: str) -> None: click.echo(click.style(f"\n── {msg}", bold=True
 
 # ── Python 环境检查 ───────────────────────────────────────────────────────────
 
-def check_python() -> bool:
+def _check_import(pkg: str, import_name: str) -> bool:
+    try:
+        mod = __import__(import_name)
+        ver = getattr(mod, "__version__", "")
+        _ok(f"{pkg}{' ' + ver if ver else ''}")
+        return True
+    except Exception as exc:
+        _fail(f"{pkg} 不可用：{exc}")
+        return False
+
+
+def check_python(required_solver: bool = False) -> bool:
     _head("Python 环境")
     all_ok = True
 
@@ -31,21 +42,24 @@ def check_python() -> bool:
         _fail("chatgame 未安装")
         all_ok = False
 
-    # 核心依赖
+    # Web 安装态真正必需的依赖
     for pkg, import_name in [
-        ("Pillow",       "PIL"),
-        ("scikit-learn", "sklearn"),
-        ("numpy",        "numpy"),
         ("fastapi",      "fastapi"),
         ("uvicorn",      "uvicorn"),
     ]:
-        try:
-            mod = __import__(import_name)
-            ver = getattr(mod, "__version__", "")
-            _ok(f"{pkg}{' ' + ver if ver else ''}")
-        except ImportError:
-            _fail(f"{pkg} 未安装")
+        if not _check_import(pkg, import_name):
             all_ok = False
+
+    # 求解器依赖只在显式开发/求解器路径下作为硬要求检查。
+    if required_solver:
+        _head("求解器依赖")
+        for pkg, import_name in [
+            ("Pillow",       "PIL"),
+            ("numpy",        "numpy"),
+            ("scikit-learn", "sklearn"),
+        ]:
+            if not _check_import(pkg, import_name):
+                all_ok = False
 
     return all_ok
 
@@ -139,7 +153,7 @@ def check_frontend(install: bool = False, frontend_dir: str | None = None) -> bo
 def run_setup(install_frontend: bool = False, frontend_dir: str | None = None) -> bool:
     """执行全量环境检查，返回是否全部通过。"""
     needs_frontend_source = install_frontend or frontend_dir is not None
-    py_ok   = check_python()
+    py_ok   = check_python(required_solver=needs_frontend_source)
     nd_ok   = check_node(required=needs_frontend_source)
     fe_ok   = check_frontend(install=install_frontend, frontend_dir=frontend_dir)
 
