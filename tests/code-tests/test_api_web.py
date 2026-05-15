@@ -1,7 +1,10 @@
 import importlib
+import io
 import sys
 
+import numpy as np
 from fastapi.testclient import TestClient
+from PIL import Image
 
 
 def _load_api(monkeypatch, assets_dir=None, disable_ui=False):
@@ -60,3 +63,28 @@ def test_api_returns_404_when_web_ui_disabled(monkeypatch):
     response = client.get("/")
 
     assert response.status_code == 404
+
+
+def test_solve_rejects_non_unique_solution(monkeypatch, mocker):
+    api = _load_api(monkeypatch, disable_ui=True)
+    client = TestClient(api.app)
+    image_buf = io.BytesIO()
+    Image.new("RGB", (1, 1), (255, 255, 255)).save(image_buf, format="PNG")
+
+    mocker.patch(
+        "chatgame.games.cow_puzzle.parse.parse",
+        return_value=(np.array([[0]]), np.array([[[128, 185, 254]]], dtype=np.uint8), (0, 0, 10, 10)),
+    )
+    mocker.patch(
+        "chatgame.games.cow_puzzle.solver.find_solutions",
+        return_value=[[(0, 0)], [(0, 0)]],
+    )
+
+    response = client.post(
+        "/api/solve",
+        data={"game": "cow-puzzle", "n": "1"},
+        files={"image": ("board.png", image_buf.getvalue(), "image/png")},
+    )
+
+    assert response.status_code == 422
+    assert "多解" in response.json()["detail"]

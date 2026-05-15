@@ -138,17 +138,20 @@ async def solve_puzzle(
     try:
         t0 = time.perf_counter()
         from chatgame.games.cow_puzzle.parse import parse
-        from chatgame.games.cow_puzzle.solver import solve, verify
+        from chatgame.games.cow_puzzle.solver import find_solutions, verify
 
         color_ids, samples, bbox = parse(tmp_path, n=n)
         actual_n = color_ids.shape[0]
 
-        solution = solve(color_ids)
+        solutions = find_solutions(color_ids, limit=2)
         elapsed = round((time.perf_counter() - t0) * 1000)
 
-        if solution is None:
+        if not solutions:
             raise HTTPException(422, "无解，请检查截图是否清晰，或确认当前关卡受支持")
+        if len(solutions) > 1:
+            raise HTTPException(422, "当前截图存在多解，无法给出唯一求解步骤")
 
+        solution = solutions[0]
         errors = verify(color_ids, solution)
         if errors:
             raise HTTPException(422, f"解验证失败: {errors}")
