@@ -31,7 +31,7 @@ classifiers = [
 chatgame = "chatgame.cli:main"
 
 [project.optional-dependencies]
-dev = ["build", "httpx", "pytest", "twine"]
+dev = ["build", "httpx", "pytest", "pytest-mock", "twine"]
 docs = ["mkdocs>=1.4.0", "mkdocs-material>=9.0.0", "mike>=2.0.0"]
 
 [tool.setuptools.dynamic]
