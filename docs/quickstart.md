@@ -20,7 +20,7 @@ pip install -e ".[dev]" -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 ```bash
 chatgame --version
-# chatgame, version 0.1.0
+# chatgame, version 0.1.1
 ```
 
 ---
@@ -70,15 +70,15 @@ chatgame solve level24.png -v
 ### 3.1 检查环境
 
 ```bash
-chatgame web setup        # 检查所有依赖
-chatgame web setup -i     # 同时自动安装缺失的前端依赖（npm install）
+chatgame web setup                  # 安装态检查（优先验证包内静态资源）
+chatgame web setup -i --frontend-dir ./web   # 开发态检查 + 自动安装缺失前端依赖
 ```
 
 输出示例：
 
 ```
 ── Python 环境
-  ✓  chatgame 0.1.0
+  ✓  chatgame 0.1.1
   ✓  fastapi 0.136.1
   ✓  uvicorn 0.47.0
   ...
@@ -88,7 +88,7 @@ chatgame web setup -i     # 同时自动安装缺失的前端依赖（npm instal
   ✓  npm  11.11.0
 
 ── 前端依赖
-  ✓  node_modules 已安装
+  ✓  包内静态资源已就绪：.../site-packages/chatgame/web_static
 
 ✓ 环境就绪，可运行：chatgame web serve
 ```
@@ -99,22 +99,24 @@ chatgame web setup -i     # 同时自动安装缺失的前端依赖（npm instal
 chatgame web serve
 ```
 
-打开浏览器访问 **http://localhost:5173**，即可使用 Web 界面求解游戏。
+打开浏览器访问 **http://localhost:8000**，即可使用 Web 界面求解游戏。
 
 ```bash
 # 仅启动后端 API（供调试）
 chatgame web serve --backend-only
 
 # 自定义端口
-chatgame web serve --port 9000 --frontend-port 3000
+chatgame web serve --port 9000
+
+# 开发态：显式使用源码目录启动 Vite dev server
+chatgame web serve --dev --frontend-dir ./web
 ```
 
 ### 3.3 检查状态
 
 ```bash
 chatgame web status
-# 后端   http://localhost:8000   running ✓
-# 前端   http://localhost:5173   running ✓
+# Web/API http://localhost:8000   running ✓
 ```
 
 ---

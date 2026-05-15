@@ -24,7 +24,7 @@ from chatgame.games.cow_puzzle.solver import solve, verify
 from chatgame.games.cow_puzzle.__main__ import _annotate, _color_name
 from chatgame.web.paths import has_static_assets, package_static_dir
 
-app = FastAPI(title="chatgame API", version="0.1.0")
+app = FastAPI(title="chatgame API", version="0.1.1")
 
 app.add_middleware(
     CORSMiddleware,

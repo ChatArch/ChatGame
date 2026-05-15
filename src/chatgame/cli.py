@@ -5,8 +5,6 @@ from __future__ import annotations
 import sys
 import click
 
-from chatgame.games.cow_puzzle.__main__ import run as cow_puzzle_run
-
 _GAMES: dict[str, str] = {
     "cow-puzzle": "牛牛摆放谜题",
 }
@@ -39,6 +37,8 @@ def solve(image: str, game: str, size: int | None, output: str | None, verbose: 
             f"未知游戏 {game!r}，可用：{', '.join(_GAMES)}",
             param_hint="'-g / --game'",
         )
+    from chatgame.games.cow_puzzle.__main__ import run as cow_puzzle_run
+
     cow_puzzle_run(image, n=size, output=output, verbose=verbose)
 
 

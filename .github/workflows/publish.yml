@@ -60,6 +60,24 @@ jobs:
       - name: Build
         run: python -m build
 
+      - name: Verify wheel contains packaged web assets
+        run: |
+          python - <<'PY'
+          import pathlib, zipfile
+          wheels = sorted(pathlib.Path("dist").glob("*.whl"))
+          assert wheels, "No wheel produced"
+          with zipfile.ZipFile(wheels[0]) as zf:
+              names = set(zf.namelist())
+          required = {
+              "chatgame/web_static/index.html",
+              "chatgame/web_static/favicon.svg",
+          }
+          missing = sorted(required - names)
+          if missing:
+              raise SystemExit(f"Wheel missing packaged web assets: {missing}")
+          print(f"Verified packaged web assets in {wheels[0].name}")
+          PY
+
       - name: Check dist
         run: twine check dist/*
 
