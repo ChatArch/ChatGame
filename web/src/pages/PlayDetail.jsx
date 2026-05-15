@@ -9,10 +9,17 @@ import {
   createEmptyMarks,
   evaluateBoard,
   getLevelBySize,
+  getRandomLevelBySize,
   levels,
   marksFromSolution,
   toggleMark,
 } from '../games/cowPuzzle'
+
+const RULES = [
+  ['region', '每个颜色区域恰好 1 头'],
+  ['row-column', '每行每列恰好 1 头'],
+  ['adjacent', '任意两头不能相邻'],
+]
 
 export default function PlayDetail() {
   const { id } = useParams()
@@ -33,13 +40,15 @@ export default function PlayDetail() {
   const result = evaluateBoard(level, marks)
 
   function switchSize(size) {
-    const nextLevel = getLevelBySize(size)
+    const nextLevel = getRandomLevelBySize(size)
     setLevel(nextLevel)
     setMarks(createEmptyMarks(nextLevel.size))
   }
 
   function restart() {
-    setMarks(createEmptyMarks(level.size))
+    const nextLevel = getRandomLevelBySize(level.size, level.id)
+    setLevel(nextLevel)
+    setMarks(createEmptyMarks(nextLevel.size))
   }
 
   function showSolution() {
@@ -137,13 +146,33 @@ export default function PlayDetail() {
                 </div>
               </div>
 
-              {result.solved ? (
+              {result.solved && (
                 <div className={gameStyles.successBox}>已满足区域、行列与相邻约束，当前局面完成。</div>
-              ) : result.conflicts.size > 0 ? (
-                <div className={gameStyles.conflictBox}>存在重复行列、重复区域或相邻奶牛，冲突格已标红。</div>
-              ) : (
-                <p className={gameStyles.message}>每个颜色区域、每行、每列各放一头，任意两头不能相邻。</p>
               )}
+              {!result.solved && result.conflicts.size === 0 && (
+                <p className={gameStyles.message}>当前没有冲突，继续补齐剩余奶牛。</p>
+              )}
+
+              <div className={gameStyles.ruleList}>
+                {RULES.map(([rule, label]) => {
+                  const violations = result.violations.filter(item => item.rule === rule)
+                  return (
+                    <section
+                      key={rule}
+                      className={`${gameStyles.ruleItem} ${violations.length ? gameStyles.ruleItemBad : ''}`}
+                    >
+                      <h3>{label}</h3>
+                      {violations.length > 0 && (
+                        <ul>
+                          {violations.map((violation, index) => (
+                            <li key={`${rule}-${index}`}>{violation.message}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </section>
+                  )
+                })}
+              </div>
 
               <div className={gameStyles.legend} aria-label="区域色块">
                 {Array.from({ length: level.size }, (_, index) => (

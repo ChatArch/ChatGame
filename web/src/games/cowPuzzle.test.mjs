@@ -5,6 +5,8 @@ import {
   createEmptyMarks,
   evaluateBoard,
   getLevelBySize,
+  getLevelsBySize,
+  getRandomLevelBySize,
   levels,
   marksFromSolution,
   toggleMark,
@@ -19,9 +21,17 @@ test('built-in levels are structurally valid and their provided solution wins', 
 })
 
 test('size selection returns the matching level', () => {
-  assert.equal(getLevelBySize(6).id, 'meadow-6')
-  assert.equal(getLevelBySize(8).id, 'meadow-8')
-  assert.equal(getLevelBySize(10).id, 'meadow-10')
+  assert.equal(getLevelBySize(6).id, 'meadow-6-a')
+  assert.equal(getLevelBySize(8).id, 'meadow-8-a')
+  assert.equal(getLevelBySize(10).id, 'meadow-10-a')
+  assert.equal(getLevelsBySize(8).length, 3)
+})
+
+test('random level selection avoids the current level when possible', () => {
+  const next = getRandomLevelBySize(6, 'meadow-6-a')
+
+  assert.equal(next.size, 6)
+  assert.notEqual(next.id, 'meadow-6-a')
 })
 
 test('one click toggles a mark without mutating the previous board', () => {
@@ -44,6 +54,8 @@ test('illegal row and adjacency state reports conflicts', () => {
   assert.equal(result.solved, false)
   assert.ok(result.conflicts.has('0:0'))
   assert.ok(result.conflicts.has('0:1'))
+  assert.ok(result.violations.some(violation => violation.rule === 'row-column'))
+  assert.ok(result.violations.some(violation => violation.rule === 'adjacent'))
 })
 
 test('complete solved state is recognized', () => {

@@ -15,8 +15,19 @@ export const REGION_COLORS = [
 
 export const levels = levelPack.levels
 
+export function getLevelsBySize(size) {
+  return levels.filter(level => level.size === Number(size) && level.verified && level.unique)
+}
+
 export function getLevelBySize(size) {
-  return levels.find(level => level.size === Number(size)) || levels[0]
+  return getLevelsBySize(size)[0] || levels[0]
+}
+
+export function getRandomLevelBySize(size, currentId = null) {
+  const pool = getLevelsBySize(size)
+  if (pool.length === 0) return levels[0]
+  const candidates = pool.length > 1 ? pool.filter(level => level.id !== currentId) : pool
+  return candidates[Math.floor(Math.random() * candidates.length)]
 }
 
 export function createEmptyMarks(size) {
@@ -51,9 +62,10 @@ export function evaluateBoard(level, marks) {
   const size = level.size
   const cells = selectedCells(marks)
   const conflicts = new Set()
-  const regionCounts = new Map()
-  const rowCounts = new Map()
-  const colCounts = new Map()
+  const violations = []
+  const regionCells = new Map()
+  const rowCells = new Map()
+  const colCells = new Map()
 
   function addConflict(a, b) {
     conflicts.add(`${a.row}:${a.col}`)
@@ -62,15 +74,44 @@ export function evaluateBoard(level, marks) {
 
   for (const cell of cells) {
     const region = level.grid[cell.row][cell.col]
-    regionCounts.set(region, (regionCounts.get(region) || 0) + 1)
-    rowCounts.set(cell.row, (rowCounts.get(cell.row) || 0) + 1)
-    colCounts.set(cell.col, (colCounts.get(cell.col) || 0) + 1)
+    if (!regionCells.has(region)) regionCells.set(region, [])
+    if (!rowCells.has(cell.row)) rowCells.set(cell.row, [])
+    if (!colCells.has(cell.col)) colCells.set(cell.col, [])
+    regionCells.get(region).push(cell)
+    rowCells.get(cell.row).push(cell)
+    colCells.get(cell.col).push(cell)
   }
 
-  for (const cell of cells) {
-    const region = level.grid[cell.row][cell.col]
-    if (regionCounts.get(region) > 1 || rowCounts.get(cell.row) > 1 || colCounts.get(cell.col) > 1) {
-      addConflict(cell)
+  for (const [region, group] of regionCells.entries()) {
+    if (group.length > 1) {
+      group.forEach(cell => addConflict(cell))
+      violations.push({
+        rule: 'region',
+        cells: group.map(cell => `${cell.row}:${cell.col}`),
+        message: `区域 ${region + 1} 已放置 ${group.length} 头`,
+      })
+    }
+  }
+
+  for (const [row, group] of rowCells.entries()) {
+    if (group.length > 1) {
+      group.forEach(cell => addConflict(cell))
+      violations.push({
+        rule: 'row-column',
+        cells: group.map(cell => `${cell.row}:${cell.col}`),
+        message: `第 ${row + 1} 行已放置 ${group.length} 头`,
+      })
+    }
+  }
+
+  for (const [col, group] of colCells.entries()) {
+    if (group.length > 1) {
+      group.forEach(cell => addConflict(cell))
+      violations.push({
+        rule: 'row-column',
+        cells: group.map(cell => `${cell.row}:${cell.col}`),
+        message: `第 ${col + 1} 列已放置 ${group.length} 头`,
+      })
     }
   }
 
@@ -80,6 +121,11 @@ export function evaluateBoard(level, marks) {
       const b = cells[j]
       if (Math.abs(a.row - b.row) <= 1 && Math.abs(a.col - b.col) <= 1) {
         addConflict(a, b)
+        violations.push({
+          rule: 'adjacent',
+          cells: [`${a.row}:${a.col}`, `${b.row}:${b.col}`],
+          message: `第 ${a.row + 1} 行第 ${a.col + 1} 列与第 ${b.row + 1} 行第 ${b.col + 1} 列相邻`,
+        })
       }
     }
   }
@@ -88,18 +134,19 @@ export function evaluateBoard(level, marks) {
   const solved =
     complete &&
     conflicts.size === 0 &&
-    regionCounts.size === size &&
-    rowCounts.size === size &&
-    colCounts.size === size
+    regionCells.size === size &&
+    rowCells.size === size &&
+    colCells.size === size
 
   return {
     selected: cells.length,
     complete,
     solved,
     conflicts,
-    regionCounts,
-    rowCounts,
-    colCounts,
+    violations,
+    regionCounts: new Map([...regionCells].map(([key, value]) => [key, value.length])),
+    rowCounts: new Map([...rowCells].map(([key, value]) => [key, value.length])),
+    colCounts: new Map([...colCells].map(([key, value]) => [key, value.length])),
     remaining: Math.max(0, size - cells.length),
   }
 }
@@ -113,6 +160,8 @@ export function validateLevel(level) {
   if (!Array.isArray(level.solution) || level.solution.length !== size) {
     errors.push('solution size mismatch')
   }
+  if (!level.verified) errors.push('level is not marked verified')
+  if (!level.unique) errors.push('level is not marked unique')
   const colors = new Set(level.grid.flat())
   for (let color = 0; color < size; color += 1) {
     if (!colors.has(color)) errors.push(`missing color ${color}`)

@@ -193,6 +193,43 @@
   border: 1px solid #efb3ad;
 }
 
+.ruleList {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ruleItem {
+  padding: 10px 12px;
+  border: 1px solid #d9e8ed;
+  border-radius: 6px;
+  background: #f8fcfd;
+}
+
+.ruleItem h3 {
+  margin: 0;
+  color: #12323c;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.ruleItem ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.ruleItem li {
+  margin: 4px 0;
+  color: #9f2c22;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.ruleItemBad {
+  border-color: #efb3ad;
+  background: #fff8f7;
+}
+
 .legend {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
