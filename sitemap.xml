@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://github.com/zhihong/ChatGame/</loc>
+         <loc>https://chatarch.github.io/ChatGame/</loc>
          <lastmod>2026-05-15</lastmod>
     </url>
     <url>
-         <loc>https://github.com/zhihong/ChatGame/cli/</loc>
+         <loc>https://chatarch.github.io/ChatGame/cli/</loc>
          <lastmod>2026-05-15</lastmod>
     </url>
     <url>
-         <loc>https://github.com/zhihong/ChatGame/index.en/</loc>
+         <loc>https://chatarch.github.io/ChatGame/index.en/</loc>
          <lastmod>2026-05-15</lastmod>
     </url>
     <url>
-         <loc>https://github.com/zhihong/ChatGame/quickstart/</loc>
+         <loc>https://chatarch.github.io/ChatGame/quickstart/</loc>
          <lastmod>2026-05-15</lastmod>
     </url>
     <url>
-         <loc>https://github.com/zhihong/ChatGame/games/cow-puzzle/algorithm/</loc>
+         <loc>https://chatarch.github.io/ChatGame/games/cow-puzzle/algorithm/</loc>
          <lastmod>2026-05-15</lastmod>
     </url>
     <url>
-         <loc>https://github.com/zhihong/ChatGame/games/cow-puzzle/rules/</loc>
+         <loc>https://chatarch.github.io/ChatGame/games/cow-puzzle/rules/</loc>
          <lastmod>2026-05-15</lastmod>
     </url>
     <url>
-         <loc>https://github.com/zhihong/ChatGame/games/cow-puzzle/strategy/</loc>
+         <loc>https://chatarch.github.io/ChatGame/games/cow-puzzle/strategy/</loc>
          <lastmod>2026-05-15</lastmod>
     </url>
 </urlset>
