@@ -13,3 +13,11 @@
   operator: OpenAI Codex
   summary: Release 0.1.2 with Python 3.10 web setup compatibility and CI/install-smoke coverage on the minimum supported Python.
   publish_run: https://github.com/ChatArch/ChatGame/actions/runs/25940942467
+- time: 2026-05-15T22:55:18Z
+  version: 0.1.3
+  tag: v0.1.3
+  commit: 51d8d15e4081e3ed2fab8840d90b3e8118ac6b11
+  operator: OpenAI Codex
+  summary: Release 0.1.3 with playable cow-puzzle Web gameplay, unique-level validation, solver examples, and generation docs.
+  pr: https://github.com/ChatArch/ChatGame/pull/4
+  publish_run: https://github.com/ChatArch/ChatGame/actions/runs/25945180952
