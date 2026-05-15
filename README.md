@@ -2,10 +2,10 @@
     <a href="https://pypi.python.org/pypi/chatgame">
         <img src="https://img.shields.io/pypi/v/chatgame.svg" alt="PyPI version" />
     </a>
-    <a href="https://github.com/OWNER/REPO/actions/workflows/ci.yml">
-        <img src="https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg" alt="Tests" />
+    <a href="https://github.com/ChatArch/ChatGame/actions/workflows/ci.yml">
+        <img src="https://github.com/ChatArch/ChatGame/actions/workflows/ci.yml/badge.svg" alt="Tests" />
     </a>
-    <a href="https://OWNER.github.io/REPO">
+    <a href="https://chatarch.github.io/ChatGame/">
         <img src="https://img.shields.io/badge/docs-mkdocs-blue.svg" alt="Documentation" />
     </a>
 </div>
