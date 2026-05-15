@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import styles from './LibraryDetail.module.css'
 import solverStyles from './Solver.module.css'
+import { cowPuzzleSamples } from '../games/cowPuzzleSamples'
 
 export default function SolveDetail() {
   const { id } = useParams()
@@ -18,10 +19,10 @@ export default function SolveDetail() {
   const [solving, setSolving] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
+  const [sampleSize, setSampleSize] = useState(null)
   const inputRef = useRef()
 
   useEffect(() => {
-    setLoadingDocs(true)
     fetch(`/api/games/${id}/docs`)
       .then(r => r.json())
       .then(d => { setDocs(d); setLoadingDocs(false) })
@@ -39,6 +40,24 @@ export default function SolveDetail() {
     setPreview(URL.createObjectURL(f))
     setResult(null)
     setError(null)
+    setSampleSize(null)
+  }
+
+  async function handleSample(sample) {
+    setSolving(false)
+    setResult(null)
+    setError(null)
+    try {
+      const response = await fetch(sample.url)
+      if (!response.ok) throw new Error('示例图加载失败')
+      const blob = await response.blob()
+      const sampleFile = new File([blob], `${sample.id}.png`, { type: blob.type || 'image/png' })
+      setFile(sampleFile)
+      setPreview(sample.url)
+      setSampleSize(sample.size)
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   function onDrop(e) {
@@ -55,6 +74,7 @@ export default function SolveDetail() {
     const fd = new FormData()
     fd.append('image', file)
     fd.append('game', id) // current game id
+    if (sampleSize) fd.append('n', String(sampleSize))
 
     try {
       const res = await fetch('/api/solve', { method: 'POST', body: fd })
@@ -103,6 +123,19 @@ export default function SolveDetail() {
             <section className={solverStyles.controlPanel}>
               <h2 className={solverStyles.sectionTitle}>自动求解</h2>
               <p className={solverStyles.helperText}>上传当前关卡截图，系统会自动识别棋盘并生成标注结果。</p>
+              <div className={solverStyles.sampleGrid} aria-label="示例图">
+                {cowPuzzleSamples.map(sample => (
+                  <button
+                    key={sample.id}
+                    type="button"
+                    className={`${solverStyles.sampleCard} ${sampleSize === sample.size ? solverStyles.sampleCardActive : ''}`}
+                    onClick={() => handleSample(sample)}
+                  >
+                    <img src={sample.url} alt={sample.title} className={solverStyles.sampleImg} />
+                    <span>{sample.title}</span>
+                  </button>
+                ))}
+              </div>
               <div
                 className={`${solverStyles.dropzone} ${file ? solverStyles.hasFile : ''}`}
                 onClick={() => inputRef.current.click()}

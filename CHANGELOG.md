@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.1.3 - 2026-05-16
+
+### Added
+
+- Add a playable Web cow-puzzle game with 6x6, 8x8, and 10x10 size selection.
+- Add a verified unique-solution level pool for gameplay and solver examples.
+- Add hover/click influence highlighting for row, column, adjacent, and same-region effects.
+- Add generation and uniqueness validation documentation for cow-puzzle levels.
+
+### Changed
+
+- Make gameplay restart randomly refresh within the current fixed-size verified pool.
+- Make solver examples clickable so users can directly run the solve flow without manual upload.
+
+### Fixed
+
+- Reject non-unique screenshots in the solve API instead of returning an arbitrary solution.
+- Keep Web serving from eagerly importing solver/parser dependencies.
+
 ## 0.1.2 - 2026-05-16
 
 ### Added

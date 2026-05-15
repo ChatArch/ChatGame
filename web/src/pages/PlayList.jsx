@@ -24,8 +24,8 @@ export default function PlayList() {
             <h2 className={styles.cardTitle}>{g.name}</h2>
             <p className={styles.cardDesc}>{g.description}</p>
             <div className={styles.cardActions}>
-              <Link to={`/play/${g.id}?tab=rules`} className={styles.linkBtn}>玩法说明</Link>
               <Link to={`/play/${g.id}?tab=start`} className={styles.linkBtn}>开始游戏</Link>
+              <Link to={`/play/${g.id}?tab=rules`} className={styles.linkBtn}>玩法说明</Link>
             </div>
           </div>
         ))}
