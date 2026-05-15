@@ -7,6 +7,14 @@ from conftest import IMG_8x8, IMG_10x10
 from chatgame.cli import main
 
 
+def test_top_level_help_command():
+    result = CliRunner().invoke(main, ["--help"])
+
+    assert result.exit_code == 0
+    assert "solve" in result.output
+    assert "web" in result.output
+
+
 def test_help_does_not_eager_import_solver(monkeypatch):
     original_import = builtins.__import__
 
@@ -27,6 +35,13 @@ def test_help_does_not_eager_import_solver(monkeypatch):
 
     assert result.exit_code == 0
     assert "启动 Web 服务" in result.output
+
+
+def test_unknown_command_reports_click_error():
+    result = CliRunner().invoke(main, ["serve", "--help"])
+
+    assert result.exit_code != 0
+    assert "No such command 'serve'" in result.output
 
 
 def test_games_command():
