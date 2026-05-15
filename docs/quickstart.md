@@ -2,11 +2,16 @@
 
 ## 1. 环境准备
 
-推荐使用 conda 管理 Python 环境：
+要求：
+
+- Python `>=3.10`
+- Node.js / npm 只在前端开发态需要；安装态 `chatgame web serve` 不依赖它们
+
+建议使用干净的 Python 虚拟环境，避免系统 `numpy/scipy/sklearn` 混装导致 ABI 冲突。
 
 ```bash
-conda create -n cow-puzzle python=3.11 -c conda-forge -y
-conda activate cow-puzzle
+python3 -m venv .venv
+. .venv/bin/activate
 ```
 
 安装 chatgame：
@@ -70,8 +75,8 @@ chatgame solve level24.png -v
 ### 3.1 检查环境
 
 ```bash
-chatgame web setup                  # 安装态检查（优先验证包内静态资源）
-chatgame web setup -i --frontend-dir ./web   # 开发态检查 + 自动安装缺失前端依赖
+chatgame web setup                        # 安装态检查（优先验证包内静态资源）
+chatgame web setup -i --frontend-dir ./web  # 开发态检查 + 自动安装缺失前端依赖
 ```
 
 输出示例：
@@ -81,17 +86,17 @@ chatgame web setup -i --frontend-dir ./web   # 开发态检查 + 自动安装缺
   ✓  chatgame 0.1.1
   ✓  fastapi 0.136.1
   ✓  uvicorn 0.47.0
-  ...
-
-── Node.js 环境
-  ✓  node v24.14.1  (path)
-  ✓  npm  11.11.0
 
 ── 前端依赖
   ✓  包内静态资源已就绪：.../site-packages/chatgame/web_static
 
 ✓ 环境就绪，可运行：chatgame web serve
 ```
+
+说明：
+
+- 安装态 `web setup` 只验证 Web 运行必需项，不要求 `scikit-learn/scipy`
+- 如果你要开发前端或使用源码目录，再显式传 `--frontend-dir` / `-i`
 
 ### 3.2 启动服务
 
