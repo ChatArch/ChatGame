@@ -2,19 +2,19 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styles from './Library.module.css'
 
-export default function Library() {
+export default function SolveList() {
   const [games, setGames] = useState([])
 
   useEffect(() => {
     fetch('/api/games')
       .then(r => r.json())
       .then(d => setGames(d.games))
-      .catch(() => setGames([{ id: 'cow-puzzle', name: '牛牛摆放谜题', description: '色块区域约束 · 行列唯一 · 无相邻' }]))
+      .catch(() => setGames([{ id: 'cow-puzzle', name: '奶牛摆放谜题', description: '色块区域约束 · 行列唯一 · 无相邻' }]))
   }, [])
 
   return (
     <div>
-      <h1 className={styles.title}>游戏库</h1>
+      <h1 className={styles.title}>解游戏</h1>
       <div className={styles.grid}>
         {games.map(g => (
           <div key={g.id} className={styles.card}>
@@ -24,8 +24,8 @@ export default function Library() {
             <h2 className={styles.cardTitle}>{g.name}</h2>
             <p className={styles.cardDesc}>{g.description}</p>
             <div className={styles.cardActions}>
-              <Link to={`/library/${g.id}?tab=rules`} className={styles.linkBtn}>玩法说明</Link>
-              <Link to={`/library/${g.id}?tab=strategy`} className={styles.linkBtn}>游戏攻略</Link>
+              <Link to={`/solve/${g.id}?tab=strategy`} className={styles.linkBtn}>游戏攻略</Link>
+              <Link to={`/solve/${g.id}?tab=solver`} className={styles.linkBtn}>自动求解</Link>
             </div>
           </div>
         ))}

@@ -6,9 +6,9 @@ export default function NavBar() {
     <header className={styles.nav}>
       <span className={styles.logo}>🎮 chatgame</span>
       <nav className={styles.links}>
-        <NavLink to="/solver"     className={({ isActive }) => isActive ? styles.active : ''}>求解</NavLink>
-        <NavLink to="/library"    className={({ isActive }) => isActive ? styles.active : ''}>游戏库</NavLink>
-        <NavLink to="/contribute" className={({ isActive }) => isActive ? styles.active : ''}>贡献游戏</NavLink>
+        <NavLink to="/play"       className={({ isActive }) => isActive ? styles.active : ''}>玩游戏</NavLink>
+        <NavLink to="/solve"      className={({ isActive }) => isActive ? styles.active : ''}>解游戏</NavLink>
+        <NavLink to="/contribute" className={({ isActive }) => isActive ? styles.active : ''}>接入游戏</NavLink>
       </nav>
     </header>
   )

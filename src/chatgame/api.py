@@ -35,8 +35,9 @@ app.add_middleware(
 _GAMES = {
     "cow-puzzle": {
         "id": "cow-puzzle",
-        "name": "牛牛摆放谜题",
+        "name": "奶牛摆放谜题",
         "description": "色块区域约束 · 行列唯一 · 无相邻，N-Queens 变体",
+        "default_n": 8,
     }
 }
 
@@ -73,10 +74,17 @@ async def solve_puzzle(
 ):
     if game not in _GAMES:
         raise HTTPException(400, f"未知游戏 {game!r}")
+    game_cfg = _GAMES[game]
+    if n is None:
+        n = game_cfg.get("default_n")
 
     # 读取图像
     raw = await image.read()
-    img_bytes = io.BytesIO(raw)
+    try:
+        with Image.open(io.BytesIO(raw)) as img:
+            image_width, image_height = img.size
+    except Exception as e:
+        raise HTTPException(400, f"无法读取图像: {e}") from e
 
     # 保存临时文件（parse 需要路径）
     import tempfile, os
@@ -94,7 +102,7 @@ async def solve_puzzle(
         elapsed = round((time.perf_counter() - t0) * 1000)
 
         if solution is None:
-            raise HTTPException(422, "无解，请检查图像或指定正确的 N")
+            raise HTTPException(422, "无解，请检查截图是否清晰，或确认当前关卡受支持")
 
         errors = verify(color_ids, solution)
         if errors:
@@ -131,6 +139,9 @@ async def solve_puzzle(
             "n": actual_n,
             "steps": steps,
             "grid": grid,
+            "grid_bbox": bbox,
+            "image_width": image_width,
+            "image_height": image_height,
             "annotated_image": annotated_b64,
             "elapsed_ms": elapsed,
         }

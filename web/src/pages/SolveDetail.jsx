@@ -5,11 +5,10 @@ import remarkGfm from 'remark-gfm'
 import styles from './LibraryDetail.module.css'
 import solverStyles from './Solver.module.css'
 
-export default function LibraryDetail() {
+export default function SolveDetail() {
   const { id } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
-  // tabs: 'play' | 'solve'
-  const tab = searchParams.get('tab') || 'play'
+  const tab = searchParams.get('tab') || 'strategy'
   const [docs, setDocs] = useState(null)
   const [loadingDocs, setLoadingDocs] = useState(true)
 
@@ -72,39 +71,36 @@ export default function LibraryDetail() {
 
   return (
     <div className={styles.wrap}>
-      <Link to="/library" className={styles.back}>← 返回游戏库</Link>
+      <Link to="/solve" className={styles.back}>← 返回解游戏列表</Link>
 
       <div className={styles.tabs}>
-        {[['play', '玩游戏'], ['solve', '解游戏']].map(([t, label]) => (
-          <button key={t}
-            className={`${styles.tab} ${tab === t ? styles.tabActive : ''}`}
-            onClick={() => setSearchParams({ tab: t })}
-          >{label}</button>
+        {[['strategy', '游戏攻略'], ['solver', '自动求解']].map(([key, label]) => (
+          <button
+            key={key}
+            className={`${styles.tab} ${tab === key ? styles.tabActive : ''}`}
+            onClick={() => setSearchParams({ tab: key })}
+          >
+            {label}
+          </button>
         ))}
       </div>
 
       <div className={styles.content}>
-        {tab === 'play' && (
+        {tab === 'strategy' && (
           <div>
-            <div className={styles.playHeader}>
-              <button className="btn-primary" disabled style={{ marginBottom: '16px' }}>开始玩 (敬请期待)</button>
+            <h2 className={solverStyles.sectionTitle}>玩法与攻略</h2>
+            <div style={{ marginBottom: '24px' }}>
+              {loadingDocs ? <p className={styles.muted}>加载中…</p> :
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{docs?.rules || '暂无玩法说明'}</ReactMarkdown>}
             </div>
-            {loadingDocs ? <p className={styles.muted}>加载中…</p> : 
-             <ReactMarkdown remarkPlugins={[remarkGfm]}>{docs?.rules || '暂无玩法说明'}</ReactMarkdown>}
+            {loadingDocs ? <p className={styles.muted}>加载中…</p> :
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{docs?.strategy || '暂无游戏攻略'}</ReactMarkdown>}
           </div>
         )}
 
-        {tab === 'solve' && (
-          <div className={solverStyles.solveLayout}>
-            {/* 左侧：攻略 */}
-            <div className={solverStyles.strategyCol}>
-              <h2 className={solverStyles.sectionTitle}>游戏攻略</h2>
-              {loadingDocs ? <p className={styles.muted}>加载中…</p> : 
-               <ReactMarkdown remarkPlugins={[remarkGfm]}>{docs?.strategy || '暂无游戏攻略'}</ReactMarkdown>}
-            </div>
-
-            {/* 右侧：求解器 */}
-            <div className={solverStyles.solverCol}>
+        {tab === 'solver' && (
+          <div className={solverStyles.solverWorkspace}>
+            <section className={solverStyles.controlPanel}>
               <h2 className={solverStyles.sectionTitle}>自动求解</h2>
               <div
                 className={`${solverStyles.dropzone} ${file ? solverStyles.hasFile : ''}`}
@@ -126,12 +122,15 @@ export default function LibraryDetail() {
               </button>
 
               {error && <div className={solverStyles.error}>{error}</div>}
+            </section>
 
-              {result && (
-                <div className={solverStyles.resultArea} style={{ marginTop: '16px' }}>
-                  <h3 className={solverStyles.sectionTitle} style={{ fontSize: '14px' }}>
-                    答案 <span className={solverStyles.badge}>{result.elapsed_ms} ms</span>
-                  </h3>
+            <section className={solverStyles.resultPanel}>
+              <h3 className={solverStyles.sectionTitle} style={{ fontSize: '14px' }}>
+                答案 {result && <span className={solverStyles.badge}>{result.elapsed_ms} ms</span>}
+              </h3>
+
+              {result ? (
+                <div className={solverStyles.resultArea}>
                   <div className={solverStyles.annotatedWrap}>
                     <img
                       src={`data:image/png;base64,${result.annotated_image}`}
@@ -140,8 +139,10 @@ export default function LibraryDetail() {
                     />
                   </div>
                 </div>
+              ) : (
+                <div className={solverStyles.resultPlaceholder}>上传截图后，答案会展示在这里</div>
               )}
-            </div>
+            </section>
           </div>
         )}
       </div>
