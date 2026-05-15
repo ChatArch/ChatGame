@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from tests.conftest import IMG_8x8, IMG_10x10
+from conftest import IMG_8x8, IMG_10x10
 from chatgame.games.cow_puzzle.parse import parse, cluster_colors
 from chatgame.utils.image import find_grid_bbox, sample_cells, load_image
 

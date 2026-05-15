@@ -118,7 +118,7 @@ def test_verify_detects_adjacency():
 # ── 集成：用真实图像验证解的合法性 ───────────────────────────────────────────
 
 def test_solve_real_8x8():
-    from tests.conftest import IMG_8x8
+    from conftest import IMG_8x8
     from chatgame.games.cow_puzzle.parse import parse
     color_ids, _, _ = parse(str(IMG_8x8), n=8)
     sol = solve(color_ids)
@@ -127,7 +127,7 @@ def test_solve_real_8x8():
 
 
 def test_solve_real_10x10():
-    from tests.conftest import IMG_10x10
+    from conftest import IMG_10x10
     from chatgame.games.cow_puzzle.parse import parse
     color_ids, _, _ = parse(str(IMG_10x10), n=10)
     sol = solve(color_ids)

@@ -1,6 +1,6 @@
 from click.testing import CliRunner
 from chatgame.cli import main
-from tests.conftest import IMG_8x8, IMG_10x10
+from conftest import IMG_8x8, IMG_10x10
 
 
 def test_games_command():
