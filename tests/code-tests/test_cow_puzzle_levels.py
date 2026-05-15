@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 
 from chatgame.games.cow_puzzle.parse import parse
-from chatgame.games.cow_puzzle.solver import solve, verify
+from chatgame.games.cow_puzzle.solver import count_solutions, solve, verify
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -25,7 +25,10 @@ def test_builtin_web_levels_are_solver_verified():
         color_ids = np.array(level["grid"], dtype=int)
         expected = [tuple(point) for point in level["solution"]]
 
+        assert level["verified"] is True
+        assert level["unique"] is True
         assert verify(color_ids, expected) == []
+        assert count_solutions(color_ids, limit=2) == 1
         solution = solve(color_ids)
         assert solution is not None
         assert verify(color_ids, solution) == []
@@ -40,3 +43,4 @@ def test_example_images_remain_parseable_and_solvable():
 
         assert solution is not None
         assert verify(color_ids, solution) == []
+        assert count_solutions(color_ids, limit=2) == 1
