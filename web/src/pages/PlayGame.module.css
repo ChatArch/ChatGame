@@ -71,7 +71,7 @@
   aspect-ratio: 1;
   border: 1.5px solid rgba(23, 52, 61, 0.58);
   color: #12323c;
-  transition: filter 0.12s ease, transform 0.12s ease;
+  transition: box-shadow 0.14s ease, filter 0.14s ease, transform 0.14s ease;
 }
 
 .cell:hover {
@@ -82,6 +82,29 @@
   z-index: 2;
   outline: 3px solid #ffffff;
   outline-offset: -5px;
+}
+
+.effectOrigin {
+  z-index: 3;
+  filter: brightness(1.14) saturate(1.18);
+  transform: translateY(-2px) scale(1.015);
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.82), 0 8px 18px rgba(23, 52, 61, 0.22);
+}
+
+.effectAdjacent {
+  z-index: 2;
+  filter: brightness(1.1) saturate(1.12);
+  box-shadow: inset 0 0 0 3px rgba(216, 64, 50, 0.42);
+}
+
+.effectLine {
+  filter: brightness(0.9) saturate(1.1);
+  box-shadow: inset 0 0 0 3px rgba(23, 52, 61, 0.26);
+}
+
+.effectRegion {
+  filter: brightness(1.08) saturate(1.14);
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.52);
 }
 
 .mark {

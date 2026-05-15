@@ -30,6 +30,7 @@ export default function PlayDetail() {
   const [loadingDocs, setLoadingDocs] = useState(true)
   const [level, setLevel] = useState(() => getLevelBySize(8))
   const [marks, setMarks] = useState(() => createEmptyMarks(8))
+  const [focusCell, setFocusCell] = useState(null)
 
   useEffect(() => {
     fetch(`/api/games/${id}/docs`)
@@ -44,12 +45,14 @@ export default function PlayDetail() {
     const nextLevel = getRandomLevelBySize(size)
     setLevel(nextLevel)
     setMarks(createEmptyMarks(nextLevel.size))
+    setFocusCell(null)
   }
 
   function restart() {
     const nextLevel = getRandomLevelBySize(level.size, level.id)
     setLevel(nextLevel)
     setMarks(createEmptyMarks(nextLevel.size))
+    setFocusCell(null)
   }
 
   function showSolution() {
@@ -57,7 +60,19 @@ export default function PlayDetail() {
   }
 
   function onCellClick(row, col) {
+    setFocusCell({ row, col })
     setMarks(current => toggleMark(current, row, col))
+  }
+
+  function effectClass(row, col, region) {
+    if (!focusCell) return ''
+    if (focusCell.row === row && focusCell.col === col) return gameStyles.effectOrigin
+    if (Math.abs(focusCell.row - row) <= 1 && Math.abs(focusCell.col - col) <= 1) {
+      return gameStyles.effectAdjacent
+    }
+    if (focusCell.row === row || focusCell.col === col) return gameStyles.effectLine
+    if (level.grid[focusCell.row][focusCell.col] === region) return gameStyles.effectRegion
+    return ''
   }
 
   return (
@@ -119,8 +134,10 @@ export default function PlayDetail() {
                       <button
                         key={key}
                         type="button"
-                        className={`${gameStyles.cell} ${conflict ? gameStyles.conflict : ''}`}
+                        className={`${gameStyles.cell} ${effectClass(rowIndex, colIndex, region)} ${conflict ? gameStyles.conflict : ''}`}
                         style={{ backgroundColor: REGION_COLORS[region % REGION_COLORS.length] }}
+                        onMouseEnter={() => setFocusCell({ row: rowIndex, col: colIndex })}
+                        onFocus={() => setFocusCell({ row: rowIndex, col: colIndex })}
                         onClick={() => onCellClick(rowIndex, colIndex)}
                         aria-pressed={selected}
                         aria-label={`第 ${rowIndex + 1} 行第 ${colIndex + 1} 列，区域 ${region + 1}`}
