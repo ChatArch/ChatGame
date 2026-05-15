@@ -6,6 +6,7 @@ theme:
   language: zh
 nav:
   - 首页: index.md
+  - CLI 用法: cli.md
   - 游戏文档:
     - 牛牛摆放谜题:
       - 玩法说明: games/cow-puzzle/rules.md
