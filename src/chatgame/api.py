@@ -10,16 +10,19 @@ from __future__ import annotations
 
 import base64
 import io
+import os
 import time
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from PIL import Image
 
 from chatgame.games.cow_puzzle.parse import parse
 from chatgame.games.cow_puzzle.solver import solve, verify
 from chatgame.games.cow_puzzle.__main__ import _annotate, _color_name
+from chatgame.web.paths import has_static_assets, package_static_dir
 
 app = FastAPI(title="chatgame API", version="0.1.0")
 
@@ -44,19 +47,41 @@ _GAMES = {
 _DOCS_DIR = Path(__file__).resolve().parents[2] / "docs" / "games"
 
 
+def _resolve_assets_dir() -> Path | None:
+    if os.getenv("CHATGAME_DISABLE_WEB_UI") == "1":
+        return None
+
+    candidates: list[Path] = []
+    env_dir = os.getenv("CHATGAME_WEB_ASSETS_DIR")
+    if env_dir:
+        candidates.append(Path(env_dir).expanduser().resolve())
+    candidates.append(package_static_dir())
+
+    for candidate in candidates:
+        if has_static_assets(candidate):
+            return candidate
+    return None
+
+
+_ASSETS_DIR = _resolve_assets_dir()
+
+
 # ── 路由 ──────────────────────────────────────────────────────────────────────
 
 @app.get("/health")
+@app.get("/api/health")
 def health():
     return {"status": "ok"}
 
 
 @app.get("/games")
+@app.get("/api/games")
 def list_games():
     return {"games": list(_GAMES.values())}
 
 
 @app.get("/games/{game_id}/docs")
+@app.get("/api/games/{game_id}/docs")
 def game_docs(game_id: str):
     if game_id not in _GAMES:
         raise HTTPException(404, f"游戏 {game_id!r} 不存在")
@@ -67,6 +92,7 @@ def game_docs(game_id: str):
 
 
 @app.post("/solve")
+@app.post("/api/solve")
 async def solve_puzzle(
     image: UploadFile = File(...),
     game: str = Form("cow-puzzle"),
@@ -181,3 +207,28 @@ def _annotate_to_buf(image_path, solution, bbox, n, buf):
         draw.text((cx - tw // 2, cy - th // 2), text, fill="white", font=font)
 
     img.save(buf, format="PNG")
+
+
+@app.get("/{full_path:path}", include_in_schema=False)
+def serve_web_app(full_path: str):
+    if _ASSETS_DIR is None:
+        raise HTTPException(404, "Web 静态资源未就绪")
+
+    relative = full_path.lstrip("/")
+    if not relative:
+        return FileResponse(_ASSETS_DIR / "index.html")
+
+    target = (_ASSETS_DIR / relative).resolve()
+    assets_root = _ASSETS_DIR.resolve()
+    try:
+        target.relative_to(assets_root)
+    except ValueError as exc:
+        raise HTTPException(404, "非法路径") from exc
+
+    if target.is_file():
+        return FileResponse(target)
+
+    if "." not in Path(relative).name:
+        return FileResponse(_ASSETS_DIR / "index.html")
+
+    raise HTTPException(404, "资源不存在")

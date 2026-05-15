@@ -102,6 +102,7 @@ export default function SolveDetail() {
           <div className={solverStyles.solverWorkspace}>
             <section className={solverStyles.controlPanel}>
               <h2 className={solverStyles.sectionTitle}>自动求解</h2>
+              <p className={solverStyles.helperText}>上传当前关卡截图，系统会自动识别棋盘并生成标注结果。</p>
               <div
                 className={`${solverStyles.dropzone} ${file ? solverStyles.hasFile : ''}`}
                 onClick={() => inputRef.current.click()}
@@ -130,7 +131,7 @@ export default function SolveDetail() {
               </h3>
 
               {result ? (
-                <div className={solverStyles.resultArea}>
+                <div className={solverStyles.resultStage}>
                   <div className={solverStyles.annotatedWrap}>
                     <img
                       src={`data:image/png;base64,${result.annotated_image}`}
@@ -140,7 +141,9 @@ export default function SolveDetail() {
                   </div>
                 </div>
               ) : (
-                <div className={solverStyles.resultPlaceholder}>上传截图后，答案会展示在这里</div>
+                <div className={solverStyles.resultStage}>
+                  <div className={solverStyles.resultPlaceholder}>上传截图后，这里会显示求解结果</div>
+                </div>
               )}
             </section>
           </div>

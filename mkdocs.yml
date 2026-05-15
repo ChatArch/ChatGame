@@ -1,7 +1,7 @@
 site_name: chatgame
 site_description: 游戏谜题截图求解工具 — 从截图到答案，一条命令
-site_url: https://github.com/zhihong/ChatGame
-repo_url: https://github.com/zhihong/ChatGame
+site_url: https://chatarch.github.io/ChatGame/
+repo_url: https://github.com/ChatArch/ChatGame
 repo_name: ChatGame
 
 theme:

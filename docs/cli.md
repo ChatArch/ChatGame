@@ -18,9 +18,10 @@ chatgame --help
 chatgame games
 chatgame solve   <IMAGE>  [-g] [-n] [-o] [-v]
 
-chatgame web setup   [-i | -I]
-chatgame web serve   [--backend-only | --frontend-only] [--port] [--frontend-port]
-chatgame web status  [--port] [--frontend-port]
+chatgame web setup   [-i | -I] [--frontend-dir]
+chatgame web build   [--frontend-dir] [--dist-dir] [--clean]
+chatgame web serve   [--backend-only | --frontend-only] [--port] [--frontend-port] [--dev] [--frontend-dir] [--assets-dir]
+chatgame web status  [--port] [--frontend-port] [--dev]
 ```
 
 ---
@@ -67,18 +68,41 @@ chatgame solve level.png -g other-game
 ### `chatgame web setup [-i|-I]`
 逐项检查 Python 依赖、Node.js、前端 `node_modules`。
 
+说明：
+
+- 对最终用户，运行已打包好的 Web UI 不需要 Node.js
+- `web setup` 主要服务于前端开发和本地构建
+
 | 标志 | 说明 |
 |------|------|
 | `-i` | 交互模式：自动 `npm install` 安装缺失的前端依赖 |
 | `-I` | 非交互：只检查，不安装（默认） |
+| `--frontend-dir` | 显式指定前端源码目录 |
 
 ```bash
-chatgame web setup       # 检查，不安装
-chatgame web setup -i    # 检查 + 自动安装缺失依赖
+chatgame web setup                         # 检查，不安装
+chatgame web setup -i --frontend-dir ./web # 检查 + 自动安装缺失依赖
+```
+
+### `chatgame web build`
+构建前端静态资源。默认从当前目录推断前端源码目录，并输出到当前目录下的 `./.chatgame/web-dist/`。
+
+| 选项 | 默认 | 说明 |
+|------|------|------|
+| `--frontend-dir` | 自动推断 | 前端源码目录 |
+| `--dist-dir` | `./.chatgame/web-dist/` | 构建输出目录 |
+| `--clean` | — | 构建前清空输出目录 |
+
+```bash
+# 在仓库根目录执行，输出到当前目录 .chatgame/web-dist/
+chatgame web build
+
+# 显式指定前端源码目录与输出目录
+chatgame web build --frontend-dir ./web --dist-dir ./dist
 ```
 
 ### `chatgame web serve`
-并行启动后端（FastAPI / uvicorn）与前端（React / Vite），`Ctrl-C` 同时停止。
+默认启动后端并服务已构建好的静态资源；加 `--dev` 后进入开发模式，同时启动 FastAPI 与 Vite。
 
 | 选项 | 默认 | 说明 |
 |------|------|------|
@@ -86,20 +110,27 @@ chatgame web setup -i    # 检查 + 自动安装缺失依赖
 | `--frontend-only` | — | 仅启动前端 |
 | `--port` | `8000` | 后端端口 |
 | `--frontend-port` | `5173` | 前端端口 |
+| `--dev` | — | 开发模式：启动 Vite dev server |
+| `--frontend-dir` | 自动推断 | 前端源码目录（开发模式） |
+| `--assets-dir` | 包内静态资源 | 已构建静态资源目录 |
 
 ```bash
-chatgame web serve                    # 同时启动
-chatgame web serve --backend-only     # 仅后端
-chatgame web serve --port 9000        # 自定义端口
+# 安装态：优先服务包内静态资源
+chatgame web serve
+
+# 服务指定目录中的静态资源
+chatgame web serve --assets-dir ./.chatgame/web-dist
+
+# 开发态：显式启动 Vite
+chatgame web serve --dev --frontend-dir ./web
 ```
 
 ### `chatgame web status`
-探测各服务端口，打印 running / stopped。
+探测服务端口。默认检查后端提供的 Web/API 端口；加 `--dev` 后同时检查 Vite 端口。
 
 ```bash
 $ chatgame web status
-  后端   http://localhost:8000   running ✓
-  前端   http://localhost:5173   stopped ✗
+  Web/API http://localhost:8000   running ✓
 ```
 
 ---
@@ -107,15 +138,21 @@ $ chatgame web status
 ## 典型工作流
 
 ```bash
-# 1. 首次环境初始化
+# 1. 开发前首次环境初始化
 chatgame web setup -i
 
-# 2. 启动 Web 服务
+# 2. 安装态运行（优先包内静态资源）
 chatgame web serve
 
-# 3. 另一个终端确认服务状态
-chatgame web status
+# 3. 开发态运行（仓库内联调）
+chatgame web serve --dev --frontend-dir ./web
 
-# 4. 纯 CLI 求解（不需要 Web 服务）
+# 4. 本地构建静态资源
+chatgame web build --frontend-dir ./web
+
+# 5. 另一个终端确认服务状态
+chatgame web status --dev
+
+# 6. 纯 CLI 求解（不需要 Web 服务）
 chatgame solve screenshot.png -o result.png
 ```
