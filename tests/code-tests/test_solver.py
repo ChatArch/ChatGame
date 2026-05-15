@@ -6,7 +6,7 @@
 import numpy as np
 import pytest
 
-from chatgame.games.cow_puzzle.solver import solve, verify
+from chatgame.games.cow_puzzle.solver import count_solutions, find_solutions, solve, verify
 
 
 # ── 辅助 ─────────────────────────────────────────────────────────────────────
@@ -73,6 +73,26 @@ def test_4x4_each_cow_in_correct_region():
     for cid, (r, c) in enumerate(sol):
         assert _4X4[r, c] == cid, \
             f"颜色 {cid} 的牛落在颜色 {_4X4[r,c]} 的格子 ({r},{c})"
+
+
+def test_count_solutions_reports_unique_solution():
+    assert count_solutions(_4X4, limit=2) == 1
+
+
+def test_find_solutions_stops_at_limit_for_non_unique_board():
+    non_unique = _ids(
+        "0 0 0 3 3 3",
+        "0 1 3 3 3 3",
+        "1 1 1 3 4 4",
+        "1 1 2 4 4 4",
+        "2 2 2 2 4 5",
+        "2 2 2 2 5 5",
+    )
+
+    solutions = find_solutions(non_unique, limit=2)
+
+    assert len(solutions) == 2
+    assert count_solutions(non_unique, limit=2) == 2
 
 
 # ── 无解情况 ──────────────────────────────────────────────────────────────────

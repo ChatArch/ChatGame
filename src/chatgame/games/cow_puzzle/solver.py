@@ -146,6 +146,110 @@ def solve(color_ids: np.ndarray) -> Optional[list[tuple[int, int]]]:
     return None
 
 
+def find_solutions(
+    color_ids: np.ndarray,
+    limit: int = 2,
+) -> list[list[tuple[int, int]]]:
+    """查找最多 ``limit`` 个解。
+
+    ``limit=2`` 用于唯一性判断：找到第二个解即可停止，因为这已经证明
+    该局面不是唯一解。返回 ``limit`` 个解表示“至少 limit 个解”，不表示
+    精确只有这么多个解。
+    """
+    if limit < 1:
+        return []
+
+    n = color_ids.shape[0]
+    domains = _build_domains(color_ids)
+    for domain in domains:
+        domain.sort()
+
+    assignment: list[Optional[tuple[int, int]]] = [None] * n
+    solutions: list[list[tuple[int, int]]] = []
+
+    def candidates_for(
+        color: int,
+        assigned: set[int],
+        used_rows: set[int],
+        used_cols: set[int],
+    ) -> list[tuple[int, int]]:
+        candidates: list[tuple[int, int]] = []
+        for r, c in domains[color]:
+            if r in used_rows or c in used_cols:
+                continue
+            if all(
+                _compatible(r, c, assignment[k][0], assignment[k][1])
+                for k in assigned
+            ):
+                candidates.append((r, c))
+        return candidates
+
+    def choose_color(
+        assigned: set[int],
+        used_rows: set[int],
+        used_cols: set[int],
+    ) -> tuple[int, list[tuple[int, int]]] | None:
+        best_color: int | None = None
+        best_candidates: list[tuple[int, int]] | None = None
+
+        for color in range(n):
+            if color in assigned:
+                continue
+            candidates = candidates_for(color, assigned, used_rows, used_cols)
+            if not candidates:
+                return None
+            if best_candidates is None or len(candidates) < len(best_candidates):
+                best_color = color
+                best_candidates = candidates
+
+        if best_color is None or best_candidates is None:
+            return None
+        return best_color, best_candidates
+
+    def backtrack(
+        assigned: set[int],
+        used_rows: set[int],
+        used_cols: set[int],
+    ) -> None:
+        if len(solutions) >= limit:
+            return
+        if len(assigned) == n:
+            solutions.append([pos for pos in assignment if pos is not None])
+            return
+
+        choice = choose_color(assigned, used_rows, used_cols)
+        if choice is None:
+            return
+        color, candidates = choice
+
+        for r, c in candidates:
+            assignment[color] = (r, c)
+            assigned.add(color)
+            used_rows.add(r)
+            used_cols.add(c)
+            backtrack(assigned, used_rows, used_cols)
+            used_cols.discard(c)
+            used_rows.discard(r)
+            assigned.discard(color)
+            assignment[color] = None
+            if len(solutions) >= limit:
+                return
+
+    backtrack(set(), set(), set())
+    return solutions
+
+
+def count_solutions(color_ids: np.ndarray, limit: int = 2) -> int:
+    """计数最多 ``limit`` 个解，用于唯一解门禁。
+
+    当 ``limit=2`` 时：
+    - 返回 0 表示无解
+    - 返回 1 表示唯一解
+    - 返回 2 表示至少发现 2 个解，即非唯一解
+    """
+    return len(find_solutions(color_ids, limit=limit))
+
+
 def verify(
     color_ids: np.ndarray,
     solution: list[tuple[int, int]],
