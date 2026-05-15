@@ -27,6 +27,24 @@ jobs:
       - name: Build package
         run: python -m build
 
+      - name: Verify wheel contains packaged web assets
+        run: |
+          python - <<'PY'
+          import pathlib, zipfile
+          wheels = sorted(pathlib.Path("dist").glob("*.whl"))
+          assert wheels, "No wheel produced"
+          with zipfile.ZipFile(wheels[0]) as zf:
+              names = set(zf.namelist())
+          required = {
+              "chatgame/web_static/index.html",
+              "chatgame/web_static/favicon.svg",
+          }
+          missing = sorted(required - names)
+          if missing:
+              raise SystemExit(f"Wheel missing packaged web assets: {missing}")
+          print(f"Verified packaged web assets in {wheels[0].name}")
+          PY
+
   install-smoke:
     runs-on: ubuntu-latest
     steps:
@@ -37,31 +55,27 @@ jobs:
           python-version: "3.11"
           cache: pip
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install package
+      - name: Build wheel
         run: |
           python -m pip install --upgrade pip
-          pip install .
+          pip install build
+          python -m build --wheel
 
-      - name: Install frontend dependencies
-        working-directory: web
-        run: npm install
+      - name: Install built wheel
+        run: pip install dist/*.whl
 
       - name: Verify setup in installed environment
-        run: chatgame web setup -I --frontend-dir "$GITHUB_WORKSPACE/web"
-
-      - name: Build frontend into target directory
-        run: chatgame web build --frontend-dir "$GITHUB_WORKSPACE/web" --dist-dir "$RUNNER_TEMP/chatgame-web-dist" --clean
+        working-directory: ${{ runner.temp }}
+        run: chatgame web setup -I
 
       - name: Start installed web server
+        working-directory: ${{ runner.temp }}
         run: |
-          chatgame web serve --assets-dir "$RUNNER_TEMP/chatgame-web-dist" --port 8123 > "$RUNNER_TEMP/chatgame-serve.log" 2>&1 &
+          chatgame web serve --port 8123 > "$RUNNER_TEMP/chatgame-serve.log" 2>&1 &
           echo $! > "$RUNNER_TEMP/chatgame-serve.pid"
 
       - name: Probe installed web server
+        working-directory: ${{ runner.temp }}
         run: |
           for i in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:8123/ >/dev/null && curl -fsS http://127.0.0.1:8123/api/games >/dev/null; then

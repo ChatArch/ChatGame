@@ -2,13 +2,10 @@
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
 import click
 
-from chatgame.web.node import MIN_NODE_MAJOR, detect as detect_node, is_ok as node_ok, run_npm
-from chatgame.web.paths import resolve_frontend_dir
+from chatgame.web.node import MIN_NODE_MAJOR, detect as detect_node, run_npm
+from chatgame.web.paths import has_static_assets, package_static_dir, resolve_frontend_dir
 
 
 # ── 彩色输出辅助 ──────────────────────────────────────────────────────────────
@@ -55,40 +52,63 @@ def check_python() -> bool:
 
 # ── Node.js 检查 ──────────────────────────────────────────────────────────────
 
-def check_node() -> bool:
+def check_node(required: bool = True) -> bool:
     _head("Node.js 环境")
     rt = detect_node()
 
     if not rt["node"]:
-        _fail(f"node 未找到（需要 >= {MIN_NODE_MAJOR}）")
-        _info("请运行：chattool setup nodejs")
-        return False
+        if required:
+            _fail(f"node 未找到（需要 >= {MIN_NODE_MAJOR}）")
+            _info("请运行：chattool setup nodejs")
+            return False
+        _warn(f"node 未找到；安装态运行不需要，但开发前端仍需要 >= {MIN_NODE_MAJOR}")
+        return True
 
     major = rt["major"]
     if major and major >= MIN_NODE_MAJOR:
         _ok(f"node {rt['node_ver']}  ({rt['source']})")
     else:
-        _warn(f"node {rt['node_ver']} 低于要求 {MIN_NODE_MAJOR}，建议升级")
+        level = _warn if not required else _fail
+        level(f"node {rt['node_ver']} 低于要求 {MIN_NODE_MAJOR}")
         _info("请运行：chattool setup nodejs")
+        if required:
+            return False
 
     if rt["npm"]:
         _ok(f"npm  {rt['npm_ver']}")
     else:
-        _fail("npm 未找到")
-        return False
+        if required:
+            _fail("npm 未找到")
+            return False
+        _warn("npm 未找到；安装态运行不需要，但开发前端仍需要它")
+        return True
 
-    return bool(major and major >= MIN_NODE_MAJOR)
+    return True if not required else bool(major and major >= MIN_NODE_MAJOR)
 
 
 # ── 前端依赖检查 ──────────────────────────────────────────────────────────────
 
 def check_frontend(install: bool = False, frontend_dir: str | None = None) -> bool:
     _head("前端依赖")
+    packaged_assets = package_static_dir()
+
+    if frontend_dir is None and not install:
+        if has_static_assets(packaged_assets):
+            _ok(f"包内静态资源已就绪：{packaged_assets}")
+            _info("安装态可直接运行：chatgame web serve")
+            return True
+        _fail(
+            "未找到包内静态资源；当前安装态不可直接运行。"
+            " 这通常表示发布物缺少前端资源，请重新构建/发布，或在源码仓库中使用 --frontend-dir。"
+        )
+        return False
 
     try:
         web_dir = resolve_frontend_dir(frontend_dir=frontend_dir)
     except FileNotFoundError as exc:
-        _fail(str(exc))
+        _fail(
+            f"{exc} 如需构建或安装前端依赖，请在源码仓库运行，或显式传入 --frontend-dir。"
+        )
         return False
 
     _info(f"前端源码目录：{web_dir}")
@@ -118,8 +138,9 @@ def check_frontend(install: bool = False, frontend_dir: str | None = None) -> bo
 
 def run_setup(install_frontend: bool = False, frontend_dir: str | None = None) -> bool:
     """执行全量环境检查，返回是否全部通过。"""
+    needs_frontend_source = install_frontend or frontend_dir is not None
     py_ok   = check_python()
-    nd_ok   = check_node()
+    nd_ok   = check_node(required=needs_frontend_source)
     fe_ok   = check_frontend(install=install_frontend, frontend_dir=frontend_dir)
 
     click.echo()

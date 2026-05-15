@@ -17,7 +17,13 @@ def build(
     clean: bool = False,
 ) -> Path:
     """构建前端静态资源并返回输出目录。"""
-    source_dir = resolve_frontend_dir(frontend_dir=frontend_dir)
+    try:
+        source_dir = resolve_frontend_dir(frontend_dir=frontend_dir)
+    except FileNotFoundError as exc:
+        raise click.ClickException(
+            f"{exc} `chatgame web build` 是开发者命令，需要前端源码目录；"
+            "请在源码仓库运行，或使用 --frontend-dir 显式指定。"
+        ) from exc
     output_dir = Path(dist_dir).expanduser().resolve() if dist_dir else default_build_dir()
 
     if clean and output_dir.exists():

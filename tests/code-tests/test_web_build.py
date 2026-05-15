@@ -49,3 +49,10 @@ def test_build_raises_click_exception_on_failure(tmp_path, mocker):
 
     with pytest.raises(click.ClickException, match="npm failed"):
         build(frontend_dir=str(frontend_dir), dist_dir=str(tmp_path / "dist"))
+
+
+def test_build_raises_friendly_error_when_frontend_missing(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    with pytest.raises(click.ClickException, match="开发者命令"):
+        build(frontend_dir=None, dist_dir=str(tmp_path / "dist"))
