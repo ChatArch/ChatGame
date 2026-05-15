@@ -6,4 +6,8 @@ theme:
   language: zh
 nav:
   - 首页: index.md
+  - 游戏文档:
+    - 牛牛摆放谜题:
+      - 玩法说明: games/cow-puzzle/rules.md
+      - 游戏攻略: games/cow-puzzle/strategy.md
   - English: index.en.md
