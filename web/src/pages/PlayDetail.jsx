@@ -10,10 +10,11 @@ import {
   evaluateBoard,
   getLevelBySize,
   getRandomLevelBySize,
-  levels,
   marksFromSolution,
   toggleMark,
 } from '../games/cowPuzzle'
+
+const SIZES = [6, 8, 10]
 
 const RULES = [
   ['region', '每个颜色区域恰好 1 头'],
@@ -87,14 +88,14 @@ export default function PlayDetail() {
             <section className={gameStyles.stage}>
               <div className={gameStyles.toolbar}>
                 <div className={gameStyles.sizeGroup} aria-label="棋盘尺寸">
-                  {levels.map(item => (
+                  {SIZES.map(size => (
                     <button
-                      key={item.id}
+                      key={size}
                       type="button"
-                      className={`${gameStyles.sizeButton} ${item.id === level.id ? gameStyles.sizeButtonActive : ''}`}
-                      onClick={() => switchSize(item.size)}
+                      className={`${gameStyles.sizeButton} ${size === level.size ? gameStyles.sizeButtonActive : ''}`}
+                      onClick={() => switchSize(size)}
                     >
-                      {item.size}x{item.size}
+                      {size}x{size}
                     </button>
                   ))}
                 </div>
