@@ -9,7 +9,7 @@
 .solverWorkspace {
   display: grid;
   grid-template-columns: 340px minmax(0, 1fr);
-  gap: 24px;
+  gap: 32px;
   align-items: start;
 }
 @media (max-width: 960px) {
@@ -18,16 +18,23 @@
   }
 }
 
-.strategyCol {
-  /* 攻略占满剩余空间 */
-}
-.solverCol {
-  /* 求解器固定 340px */
-}
-
 .controlPanel,
 .resultPanel {
   min-width: 0;
+}
+
+.controlPanel {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.resultPanel {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
 }
 
 .sectionTitle {
@@ -46,6 +53,13 @@
   border-radius: 20px;
   padding: 2px 8px;
   color: var(--muted);
+}
+
+.helperText {
+  margin: -2px 0 12px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 /* dropzone */
@@ -75,14 +89,24 @@
   font-size: 13px;
 }
 
-.resultArea {
-  margin-top: 16px;
+.resultStage {
+  min-height: 560px;
   display: flex;
-  justify-content: flex-start;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 8px;
+}
+@media (max-width: 960px) {
+  .resultStage {
+    min-height: auto;
+    justify-content: flex-start;
+    padding-top: 0;
+  }
 }
 
 .resultPlaceholder {
-  min-height: 220px;
+  width: min(100%, 420px);
+  min-height: 240px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -91,20 +115,21 @@
   background: var(--bg);
   color: var(--muted);
   font-size: 14px;
+  text-align: center;
+  padding: 0 24px;
 }
 
 .annotatedWrap {
   position: relative;
-  width: fit-content;
-  max-width: min(100%, 460px);
+  width: min(100%, 420px);
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 }
 .annotatedImg {
-  width: auto;
-  max-width: 100%;
+  width: 100%;
   max-height: 78vh;
   object-fit: contain;
   display: block;
