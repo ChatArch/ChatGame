@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.4 - 2026-05-16
+
+### Added
+
+- Add `--host` to `chatgame web serve` so Web UI can bind to `0.0.0.0` for LAN/IP access.
+
+### Changed
+
+- Reduce the user-facing `chatgame web` surface to installed-mode commands: `setup` and `serve`.
+- Keep `chatgame web setup` focused on installed-mode runtime checks instead of frontend development dependencies.
+- Document `chatgame web serve --host 0.0.0.0` for IP-based Web access.
+
 ## 0.1.3 - 2026-05-16
 
 ### Added

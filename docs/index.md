@@ -10,7 +10,7 @@
 
 ```bash
 # 安装
-pip install -e ".[dev]"
+pip install chatgame
 
 # 求解截图（打印答案）
 chatgame solve level24.png
@@ -30,7 +30,7 @@ chatgame solve level24.png -o solved.png
 | 截图求解，打印点击顺序 | `chatgame solve <图片>` |
 | 保存标注图（数字叠加） | `chatgame solve <图片> -o <输出>` |
 | 查看支持的游戏 | `chatgame games` |
-| 环境检查 + 依赖安装 | `chatgame web setup -i` |
+| 检查 Web 运行环境 | `chatgame web setup` |
 | 启动 Web UI | `chatgame web serve` |
 
 ---

@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from chatgame.web import serve as web_serve
 
 
@@ -13,21 +11,16 @@ def test_spawn_backend_passes_host_to_uvicorn(mocker):
     assert "--port=8123" in args
 
 
-def test_spawn_static_server_binds_host(mocker, tmp_path):
-    popen = mocker.patch("subprocess.Popen")
+def test_resolved_assets_dir_prefers_env_override(mocker, tmp_path):
+    env_assets = tmp_path / "env-assets"
+    env_assets.mkdir()
+    (env_assets / "index.html").write_text("<html></html>", encoding="utf-8")
 
-    web_serve._spawn_static_server(tmp_path, frontend_port=5174, host="0.0.0.0")
+    pkg_assets = tmp_path / "pkg-assets"
+    pkg_assets.mkdir()
+    (pkg_assets / "index.html").write_text("<html></html>", encoding="utf-8")
 
-    args = popen.call_args.args[0]
-    assert args[args.index("--bind") + 1] == "0.0.0.0"
-    assert str(tmp_path) in args
+    mocker.patch.dict("os.environ", {"CHATGAME_WEB_ASSETS_DIR": str(env_assets)})
+    mocker.patch("chatgame.web.serve.package_static_dir", return_value=pkg_assets)
 
-
-def test_spawn_vite_passes_host(mocker, tmp_path):
-    popen = mocker.patch("subprocess.Popen")
-    mocker.patch("chatgame.web.serve.detect_node", return_value={"source": "path"})
-
-    web_serve._spawn_vite_process(Path(tmp_path), frontend_port=5174, backend_port=8123, host="0.0.0.0")
-
-    args = popen.call_args.args[0]
-    assert args == ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5174"]
+    assert web_serve._resolved_assets_dir() == env_assets

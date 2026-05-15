@@ -17,15 +17,14 @@ python3 -m venv .venv
 安装 chatgame：
 
 ```bash
-git clone <repo-url> ChatGame && cd ChatGame
-pip install -e ".[dev]" -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install chatgame
 ```
 
 确认安装：
 
 ```bash
 chatgame --version
-# chatgame, version 0.1.3
+# chatgame, version 0.1.4
 ```
 
 ---
@@ -75,28 +74,28 @@ chatgame solve level24.png -v
 ### 3.1 检查环境
 
 ```bash
-chatgame web setup                        # 安装态检查（优先验证包内静态资源）
-chatgame web setup -i --frontend-dir ./web  # 开发态检查 + 自动安装缺失前端依赖
+chatgame web setup
 ```
 
 输出示例：
 
 ```
 ── Python 环境
-  ✓  chatgame 0.1.3
+  ✓  chatgame 0.1.4
   ✓  fastapi 0.136.1
   ✓  uvicorn 0.47.0
 
-── 前端依赖
+── Web 静态资源
   ✓  包内静态资源已就绪：.../site-packages/chatgame/web_static
+  ·  可直接运行：chatgame web serve
 
 ✓ 环境就绪，可运行：chatgame web serve
 ```
 
 说明：
 
-- 安装态 `web setup` 只验证 Web 运行必需项，不要求 `scikit-learn/scipy`
-- 如果你要开发前端或使用源码目录，再显式传 `--frontend-dir` / `-i`
+- `web setup` 只验证安装态 Web 运行必需项，不要求 `scikit-learn/scipy`
+- 只要 `pip install chatgame` 完整成功，通常不需要额外准备 Node.js
 
 ### 3.2 启动服务
 
@@ -107,24 +106,11 @@ chatgame web serve
 打开浏览器访问 **http://localhost:8000**，即可使用 Web 界面求解游戏。
 
 ```bash
-# 仅启动后端 API（供调试）
-chatgame web serve --backend-only
-
 # 自定义端口
 chatgame web serve --port 9000
 
 # 允许局域网/IP 访问
 chatgame web serve --host 0.0.0.0 --port 8000
-
-# 开发态：显式使用源码目录启动 Vite dev server
-chatgame web serve --dev --frontend-dir ./web
-```
-
-### 3.3 检查状态
-
-```bash
-chatgame web status
-# Web/API http://127.0.0.1:8000   running ✓
 ```
 
 ---
