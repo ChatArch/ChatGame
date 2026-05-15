@@ -66,7 +66,7 @@ jobs:
 
       - name: Verify setup in installed environment
         working-directory: ${{ runner.temp }}
-        run: chatgame web setup -I
+        run: chatgame web setup
 
       - name: Start installed web server
         working-directory: ${{ runner.temp }}
