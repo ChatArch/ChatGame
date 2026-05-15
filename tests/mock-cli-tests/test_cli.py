@@ -1,6 +1,32 @@
+import builtins
+import importlib
+import sys
+
 from click.testing import CliRunner
-from chatgame.cli import main
 from conftest import IMG_8x8, IMG_10x10
+from chatgame.cli import main
+
+
+def test_help_does_not_eager_import_solver(monkeypatch):
+    original_import = builtins.__import__
+
+    def guarded_import(name, globals=None, locals=None, fromlist=(), level=0):
+        if name == "chatgame.games.cow_puzzle.__main__":
+            raise AssertionError("solver imported while rendering help")
+        return original_import(name, globals, locals, fromlist, level)
+
+    sys.modules.pop("chatgame.cli", None)
+    monkeypatch.setattr(builtins, "__import__", guarded_import)
+
+    try:
+        cli_module = importlib.import_module("chatgame.cli")
+        result = CliRunner().invoke(cli_module.main, ["web", "serve", "--help"])
+    finally:
+        sys.modules.pop("chatgame.cli", None)
+        importlib.import_module("chatgame.cli")
+
+    assert result.exit_code == 0
+    assert "启动 Web 服务" in result.output
 
 
 def test_games_command():
