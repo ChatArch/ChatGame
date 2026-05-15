@@ -1,0 +1,40 @@
+.title { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cardPlaceholder { opacity: .5; }
+.cardTop { display: flex; justify-content: flex-end; }
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  background: #e6f4ea;
+  color: var(--success);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.cardTitle { font-size: 16px; font-weight: 700; }
+.cardDesc { font-size: 13px; color: var(--muted); flex: 1; }
+.cardActions { display: flex; gap: 8px; margin-top: 4px; }
+.linkBtn {
+  flex: 1;
+  text-align: center;
+  padding: 7px 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent);
+  transition: background .12s;
+}
+.linkBtn:hover { background: var(--bg); text-decoration: none; }

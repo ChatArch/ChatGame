@@ -1,0 +1,52 @@
+.wrap { max-width: 520px; }
+.title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+.desc { font-size: 14px; color: var(--muted); margin-bottom: 16px; line-height: 1.6; }
+.notice {
+  font-size: 13px;
+  color: #7a5f00;
+  background: #fffbe6;
+  border: 1px solid #ffe58f;
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-bottom: 20px;
+}
+.form { display: flex; flex-direction: column; gap: 16px; }
+.label { font-size: 13px; font-weight: 600; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
+.required { color: var(--danger); }
+.input, .textarea {
+  font-size: 14px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+}
+.input:focus, .textarea:focus { border-color: var(--accent); }
+.fileZone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color .12s;
+}
+.fileZone:hover { border-color: var(--accent); color: var(--accent); }
+.toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--success);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  animation: fadeIn .2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%); } }

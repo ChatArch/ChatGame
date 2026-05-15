@@ -1,0 +1,172 @@
+"""chatgame FastAPI 后端。
+
+端点：
+  POST /solve              上传截图，返回解坐标 + 标注图（base64）+ 颜色矩阵
+  GET  /games              已支持游戏列表
+  GET  /games/{id}/docs    游戏规则 / 攻略 Markdown
+"""
+
+from __future__ import annotations
+
+import base64
+import io
+import time
+from pathlib import Path
+
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from PIL import Image
+
+from chatgame.games.cow_puzzle.parse import parse
+from chatgame.games.cow_puzzle.solver import solve, verify
+from chatgame.games.cow_puzzle.__main__ import _annotate, _color_name
+
+app = FastAPI(title="chatgame API", version="0.1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ── 游戏注册表 ────────────────────────────────────────────────────────────────
+
+_GAMES = {
+    "cow-puzzle": {
+        "id": "cow-puzzle",
+        "name": "牛牛摆放谜题",
+        "description": "色块区域约束 · 行列唯一 · 无相邻，N-Queens 变体",
+    }
+}
+
+_DOCS_DIR = Path(__file__).resolve().parents[2] / "docs" / "games"
+
+
+# ── 路由 ──────────────────────────────────────────────────────────────────────
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
+@app.get("/games")
+def list_games():
+    return {"games": list(_GAMES.values())}
+
+
+@app.get("/games/{game_id}/docs")
+def game_docs(game_id: str):
+    if game_id not in _GAMES:
+        raise HTTPException(404, f"游戏 {game_id!r} 不存在")
+    doc_dir = _DOCS_DIR / game_id
+    rules = (doc_dir / "rules.md").read_text(encoding="utf-8") if (doc_dir / "rules.md").exists() else ""
+    strategy = (doc_dir / "strategy.md").read_text(encoding="utf-8") if (doc_dir / "strategy.md").exists() else ""
+    return {"rules": rules, "strategy": strategy}
+
+
+@app.post("/solve")
+async def solve_puzzle(
+    image: UploadFile = File(...),
+    game: str = Form("cow-puzzle"),
+    n: int | None = Form(None),
+):
+    if game not in _GAMES:
+        raise HTTPException(400, f"未知游戏 {game!r}")
+
+    # 读取图像
+    raw = await image.read()
+    img_bytes = io.BytesIO(raw)
+
+    # 保存临时文件（parse 需要路径）
+    import tempfile, os
+    suffix = Path(image.filename or "img.png").suffix or ".png"
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+        tmp.write(raw)
+        tmp_path = tmp.name
+
+    try:
+        t0 = time.perf_counter()
+        color_ids, samples, bbox = parse(tmp_path, n=n)
+        actual_n = color_ids.shape[0]
+
+        solution = solve(color_ids)
+        elapsed = round((time.perf_counter() - t0) * 1000)
+
+        if solution is None:
+            raise HTTPException(422, "无解，请检查图像或指定正确的 N")
+
+        errors = verify(color_ids, solution)
+        if errors:
+            raise HTTPException(422, f"解验证失败: {errors}")
+
+        # 颜色名称
+        color_names = [
+            _color_name(samples[color_ids == cid][0].tolist())
+            for cid in range(actual_n)
+        ]
+
+        # 步骤列表（按行列顺序排）
+        ordered = sorted(enumerate(solution), key=lambda x: (x[1][0], x[1][1]))
+        steps = [
+            {
+                "step": click_num,
+                "row": r,
+                "col": c,
+                "color_id": cid,
+                "color_name": color_names[cid],
+            }
+            for click_num, (cid, (r, c)) in enumerate(ordered, 1)
+        ]
+
+        # 颜色矩阵
+        grid = color_ids.tolist()
+
+        # 标注图 → base64
+        out_buf = io.BytesIO()
+        _annotate_to_buf(tmp_path, solution, bbox, actual_n, out_buf)
+        annotated_b64 = base64.b64encode(out_buf.getvalue()).decode()
+
+        return {
+            "n": actual_n,
+            "steps": steps,
+            "grid": grid,
+            "annotated_image": annotated_b64,
+            "elapsed_ms": elapsed,
+        }
+    finally:
+        os.unlink(tmp_path)
+
+
+def _annotate_to_buf(image_path, solution, bbox, n, buf):
+    """标注图写入 BytesIO 而非文件。"""
+    from PIL import Image, ImageDraw, ImageFont
+
+    img = Image.open(image_path).convert("RGB")
+    draw = ImageDraw.Draw(img)
+    x0, y0, x1, y1 = bbox
+    cell_w = (x1 - x0) / n
+    cell_h = (y1 - y0) / n
+
+    ordered = sorted(enumerate(solution), key=lambda x: (x[1][0], x[1][1]))
+    for click_num, (_, (r, c)) in enumerate(ordered, 1):
+        cx = int(x0 + (c + 0.5) * cell_w)
+        cy = int(y0 + (r + 0.5) * cell_h)
+        radius = int(min(cell_w, cell_h) * 0.35)
+        draw.ellipse(
+            (cx - radius, cy - radius, cx + radius, cy + radius),
+            fill=(220, 50, 50), outline=(255, 255, 255), width=2,
+        )
+        try:
+            font = ImageFont.truetype(
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                size=int(radius * 1.2),
+            )
+        except OSError:
+            font = ImageFont.load_default()
+        text = str(click_num)
+        bbox_t = draw.textbbox((0, 0), text, font=font)
+        tw, th = bbox_t[2] - bbox_t[0], bbox_t[3] - bbox_t[1]
+        draw.text((cx - tw // 2, cy - th // 2), text, fill="white", font=font)
+
+    img.save(buf, format="PNG")

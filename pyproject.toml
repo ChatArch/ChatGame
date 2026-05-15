@@ -16,6 +16,9 @@ dependencies = [
     "pillow>=9.0",
     "scikit-learn>=1.0",
     "numpy>=1.23",
+    "fastapi>=0.100",
+    "uvicorn>=0.20",
+    "python-multipart>=0.0.6",
 ]
 authors = [{name = "ChatArch", email = "1073853456@qq.com"}]
 keywords = ["chatgame", "chatarch", "cli"]
