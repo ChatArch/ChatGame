@@ -541,30 +541,19 @@
   <a href="#web" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Web 服务类
+        Web 类
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Web 服务类">
+    <nav class="md-nav" aria-label="Web 类">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#chatgame-web-setup-i-i" class="md-nav__link">
+  <a href="#chatgame-web-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        chatgame web setup [-i|-I]
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#chatgame-web-build" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        chatgame web build
+        chatgame web setup
       
     </span>
   </a>
@@ -576,17 +565,6 @@
     <span class="md-ellipsis">
       
         chatgame web serve
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#chatgame-web-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        chatgame web status
       
     </span>
   </a>
@@ -966,30 +944,19 @@
   <a href="#web" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Web 服务类
+        Web 类
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Web 服务类">
+    <nav class="md-nav" aria-label="Web 类">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#chatgame-web-setup-i-i" class="md-nav__link">
+  <a href="#chatgame-web-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        chatgame web setup [-i|-I]
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#chatgame-web-build" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        chatgame web build
+        chatgame web setup
       
     </span>
   </a>
@@ -1001,17 +968,6 @@
     <span class="md-ellipsis">
       
         chatgame web serve
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#chatgame-web-status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        chatgame web status
       
     </span>
   </a>
@@ -1056,27 +1012,26 @@
 
 <h1 id="chatgame-cli">chatgame CLI 用法</h1>
 <h2 id="_1">安装</h2>
-<pre><code class="language-bash">conda activate cow-puzzle
-pip install -e &quot;.[dev]&quot;
+<pre><code class="language-bash">python3 -m venv .venv
+. .venv/bin/activate
+pip install chatgame
 </code></pre>
 <hr />
 <h2 id="_2">命令总览</h2>
-<pre><code>chatgame --version
+<pre><code class="language-text">chatgame --version
 chatgame --help
 
 chatgame games
-chatgame solve   &lt;IMAGE&gt;  [-g] [-n] [-o] [-v]
+chatgame solve &lt;IMAGE&gt; [-g] [-n] [-o] [-v]
 
-chatgame web setup   [-i | -I] [--frontend-dir]
-chatgame web build   [--frontend-dir] [--dist-dir] [--clean]
-chatgame web serve   [--backend-only | --frontend-only] [--host] [--port] [--frontend-port] [--dev] [--frontend-dir] [--assets-dir]
-chatgame web status  [--host] [--port] [--frontend-port] [--dev]
+chatgame web setup
+chatgame web serve [--host] [--port]
 </code></pre>
 <hr />
 <h2 id="_3">求解类</h2>
 <h3 id="chatgame-games"><code>chatgame games</code></h3>
 <p>列出已支持的游戏。</p>
-<pre><code>$ chatgame games
+<pre><code class="language-text">$ chatgame games
 已支持游戏：
   cow-puzzle       牛牛摆放谜题
 </code></pre>
@@ -1113,88 +1068,24 @@ chatgame web status  [--host] [--port] [--frontend-port] [--dev]
 </tr>
 </tbody>
 </table>
-<pre><code class="language-bash"># 最简用法（终端打印答案）
-chatgame solve level24.png
-
-# 同时保存标注图
+<pre><code class="language-bash">chatgame solve level24.png
 chatgame solve level24.png -o solved.png
-
-# 指定大小 + 调试输出
 chatgame solve level24.png -n 10 -v
-
-# 非默认游戏（未来扩展）
-chatgame solve level.png -g other-game
 </code></pre>
 <hr />
-<h2 id="web">Web 服务类</h2>
-<h3 id="chatgame-web-setup-i-i"><code>chatgame web setup [-i|-I]</code></h3>
-<p>逐项检查 Python 依赖、Node.js、前端 <code>node_modules</code>。</p>
-<p>说明：</p>
+<h2 id="web">Web 类</h2>
+<h3 id="chatgame-web-setup"><code>chatgame web setup</code></h3>
+<p>检查安装态 Web 运行环境：</p>
 <ul>
-<li>对最终用户，运行已打包好的 Web UI 不需要 Node.js</li>
-<li><code>web setup</code> 主要服务于前端开发和本地构建</li>
+<li><code>chatgame</code> 包本身</li>
+<li><code>fastapi</code></li>
+<li><code>uvicorn</code></li>
+<li>包内静态资源 <code>chatgame/web_static</code></li>
 </ul>
-<table>
-<thead>
-<tr>
-<th>标志</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>-i</code></td>
-<td>交互模式：自动 <code>npm install</code> 安装缺失的前端依赖</td>
-</tr>
-<tr>
-<td><code>-I</code></td>
-<td>非交互：只检查，不安装（默认）</td>
-</tr>
-<tr>
-<td><code>--frontend-dir</code></td>
-<td>显式指定前端源码目录</td>
-</tr>
-</tbody>
-</table>
-<pre><code class="language-bash">chatgame web setup                         # 检查，不安装
-chatgame web setup -i --frontend-dir ./web # 检查 + 自动安装缺失依赖
-</code></pre>
-<h3 id="chatgame-web-build"><code>chatgame web build</code></h3>
-<p>构建前端静态资源。默认从当前目录推断前端源码目录，并输出到当前目录下的 <code>./.chatgame/web-dist/</code>。</p>
-<table>
-<thead>
-<tr>
-<th>选项</th>
-<th>默认</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>--frontend-dir</code></td>
-<td>自动推断</td>
-<td>前端源码目录</td>
-</tr>
-<tr>
-<td><code>--dist-dir</code></td>
-<td><code>./.chatgame/web-dist/</code></td>
-<td>构建输出目录</td>
-</tr>
-<tr>
-<td><code>--clean</code></td>
-<td>—</td>
-<td>构建前清空输出目录</td>
-</tr>
-</tbody>
-</table>
-<pre><code class="language-bash"># 在仓库根目录执行，输出到当前目录 .chatgame/web-dist/
-chatgame web build
-
-# 显式指定前端源码目录与输出目录
-chatgame web build --frontend-dir ./web --dist-dir ./dist
+<pre><code class="language-bash">chatgame web setup
 </code></pre>
 <h3 id="chatgame-web-serve"><code>chatgame web serve</code></h3>
-<p>默认启动后端并服务已构建好的静态资源；加 <code>--dev</code> 后进入开发模式，同时启动 FastAPI 与 Vite。</p>
+<p>启动安装态 Web 服务，默认直接服务包内静态资源。</p>
 <table>
 <thead>
 <tr>
@@ -1204,16 +1095,6 @@ chatgame web build --frontend-dir ./web --dist-dir ./dist
 </tr>
 </thead>
 <tbody>
-<tr>
-<td><code>--backend-only</code></td>
-<td>—</td>
-<td>仅启动后端</td>
-</tr>
-<tr>
-<td><code>--frontend-only</code></td>
-<td>—</td>
-<td>仅启动前端</td>
-</tr>
 <tr>
 <td><code>--host</code></td>
 <td><code>127.0.0.1</code></td>
@@ -1222,65 +1103,23 @@ chatgame web build --frontend-dir ./web --dist-dir ./dist
 <tr>
 <td><code>--port</code></td>
 <td><code>8000</code></td>
-<td>后端端口</td>
-</tr>
-<tr>
-<td><code>--frontend-port</code></td>
-<td><code>5173</code></td>
-<td>前端端口</td>
-</tr>
-<tr>
-<td><code>--dev</code></td>
-<td>—</td>
-<td>开发模式：启动 Vite dev server</td>
-</tr>
-<tr>
-<td><code>--frontend-dir</code></td>
-<td>自动推断</td>
-<td>前端源码目录（开发模式）</td>
-</tr>
-<tr>
-<td><code>--assets-dir</code></td>
-<td>包内静态资源</td>
-<td>已构建静态资源目录</td>
+<td>Web/API 端口</td>
 </tr>
 </tbody>
 </table>
-<pre><code class="language-bash"># 安装态：优先服务包内静态资源
-chatgame web serve
-
-# 服务指定目录中的静态资源
-chatgame web serve --assets-dir ./.chatgame/web-dist
-
-# 允许其他机器通过本机 IP 访问
+<pre><code class="language-bash">chatgame web serve
+chatgame web serve --port 9000
 chatgame web serve --host 0.0.0.0 --port 8000
-
-# 开发态：显式启动 Vite
-chatgame web serve --dev --frontend-dir ./web --host 0.0.0.0
-</code></pre>
-<h3 id="chatgame-web-status"><code>chatgame web status</code></h3>
-<p>探测服务端口。默认检查后端提供的 Web/API 端口；加 <code>--dev</code> 后同时检查 Vite 端口。</p>
-<pre><code class="language-bash">$ chatgame web status
-  Web/API http://127.0.0.1:8000   running ✓
 </code></pre>
 <hr />
 <h2 id="_4">典型工作流</h2>
-<pre><code class="language-bash"># 1. 开发前首次环境初始化
-chatgame web setup -i
+<pre><code class="language-bash"># 1. 检查安装态环境
+chatgame web setup
 
-# 2. 安装态运行（优先包内静态资源）
+# 2. 启动 Web UI
 chatgame web serve
 
-# 3. 开发态运行（仓库内联调）
-chatgame web serve --dev --frontend-dir ./web
-
-# 4. 本地构建静态资源
-chatgame web build --frontend-dir ./web
-
-# 5. 另一个终端确认服务状态
-chatgame web status --dev
-
-# 6. 纯 CLI 求解（不需要 Web 服务）
+# 3. 纯 CLI 求解
 chatgame solve screenshot.png -o result.png
 </code></pre>
 

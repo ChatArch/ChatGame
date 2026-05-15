@@ -505,17 +505,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#33" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3.3 检查状态
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -918,17 +907,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#33" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3.3 检查状态
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -988,12 +966,11 @@
 . .venv/bin/activate
 </code></pre>
 <p>安装 chatgame：</p>
-<pre><code class="language-bash">git clone &lt;repo-url&gt; ChatGame &amp;&amp; cd ChatGame
-pip install -e &quot;.[dev]&quot; -i https://pypi.tuna.tsinghua.edu.cn/simple
+<pre><code class="language-bash">pip install chatgame
 </code></pre>
 <p>确认安装：</p>
 <pre><code class="language-bash">chatgame --version
-# chatgame, version 0.1.3
+# chatgame, version 0.1.4
 </code></pre>
 <hr />
 <h2 id="2-cli">2. 纯 CLI 求解</h2>
@@ -1027,44 +1004,34 @@ chatgame solve level24.png -v
 <hr />
 <h2 id="3-web-ui">3. 启动 Web UI</h2>
 <h3 id="31">3.1 检查环境</h3>
-<pre><code class="language-bash">chatgame web setup                        # 安装态检查（优先验证包内静态资源）
-chatgame web setup -i --frontend-dir ./web  # 开发态检查 + 自动安装缺失前端依赖
+<pre><code class="language-bash">chatgame web setup
 </code></pre>
 <p>输出示例：</p>
 <pre><code>── Python 环境
-  ✓  chatgame 0.1.3
+  ✓  chatgame 0.1.4
   ✓  fastapi 0.136.1
   ✓  uvicorn 0.47.0
 
-── 前端依赖
+── Web 静态资源
   ✓  包内静态资源已就绪：.../site-packages/chatgame/web_static
+  ·  可直接运行：chatgame web serve
 
 ✓ 环境就绪，可运行：chatgame web serve
 </code></pre>
 <p>说明：</p>
 <ul>
-<li>安装态 <code>web setup</code> 只验证 Web 运行必需项，不要求 <code>scikit-learn/scipy</code></li>
-<li>如果你要开发前端或使用源码目录，再显式传 <code>--frontend-dir</code> / <code>-i</code></li>
+<li><code>web setup</code> 只验证安装态 Web 运行必需项，不要求 <code>scikit-learn/scipy</code></li>
+<li>只要 <code>pip install chatgame</code> 完整成功，通常不需要额外准备 Node.js</li>
 </ul>
 <h3 id="32">3.2 启动服务</h3>
 <pre><code class="language-bash">chatgame web serve
 </code></pre>
 <p>打开浏览器访问 <strong>http://localhost:8000</strong>，即可使用 Web 界面求解游戏。</p>
-<pre><code class="language-bash"># 仅启动后端 API（供调试）
-chatgame web serve --backend-only
-
-# 自定义端口
+<pre><code class="language-bash"># 自定义端口
 chatgame web serve --port 9000
 
 # 允许局域网/IP 访问
 chatgame web serve --host 0.0.0.0 --port 8000
-
-# 开发态：显式使用源码目录启动 Vite dev server
-chatgame web serve --dev --frontend-dir ./web
-</code></pre>
-<h3 id="33">3.3 检查状态</h3>
-<pre><code class="language-bash">chatgame web status
-# Web/API http://127.0.0.1:8000   running ✓
 </code></pre>
 <hr />
 <h2 id="4">4. 支持的游戏</h2>
