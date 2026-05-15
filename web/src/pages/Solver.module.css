@@ -8,7 +8,7 @@
 
 .solverWorkspace {
   display: grid;
-  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+  grid-template-columns: 340px minmax(0, 1fr);
   gap: 24px;
   align-items: start;
 }
@@ -77,10 +77,12 @@
 
 .resultArea {
   margin-top: 16px;
+  display: flex;
+  justify-content: flex-start;
 }
 
 .resultPlaceholder {
-  min-height: 280px;
+  min-height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -93,14 +95,17 @@
 
 .annotatedWrap {
   position: relative;
+  width: fit-content;
+  max-width: min(100%, 460px);
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--border);
 }
 .annotatedImg {
-  width: 100%;
-  max-height: 72vh;
+  width: auto;
+  max-width: 100%;
+  max-height: 78vh;
   object-fit: contain;
   display: block;
 }
