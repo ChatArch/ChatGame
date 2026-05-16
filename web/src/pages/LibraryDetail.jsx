@@ -22,6 +22,7 @@ export default function LibraryDetail() {
   const inputRef = useRef()
 
   useEffect(() => {
+    setLoadingDocs(true)
     fetch(`/api/games/${id}/docs`)
       .then(r => r.json())
       .then(d => { setDocs(d); setLoadingDocs(false) })
