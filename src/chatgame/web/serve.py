@@ -34,6 +34,7 @@ def _spawn_backend(
     backend_port: int,
     host: str = "127.0.0.1",
     assets_dir: Path | None = None,
+    reload: bool = False,
 ) -> subprocess.Popen:
     env = os.environ.copy()
     if assets_dir:
@@ -47,12 +48,15 @@ def _spawn_backend(
         f"--host={host}",
         f"--port={backend_port}",
     ]
+    if reload:
+        args.append("--reload")
     return subprocess.Popen(args, env=env)
 
 
 def serve(
     backend_port: int = 8000,
     host: str = "127.0.0.1",
+    reload: bool = False,
 ) -> None:
     procs: list[subprocess.Popen] = []
 
@@ -81,6 +85,7 @@ def serve(
             backend_port=backend_port,
             host=host,
             assets_dir=resolved_assets,
+            reload=reload,
         )
     )
 

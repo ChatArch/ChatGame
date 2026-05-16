@@ -72,15 +72,18 @@ def setup() -> None:
 @click.option("--host",          default="127.0.0.1", show_default=True,
               help="服务监听地址；局域网/IP 访问可设为 0.0.0.0")
 @click.option("--port",          default=8000, show_default=True, help="后端端口")
+@click.option("--reload",        is_flag=True, help="启用 uvicorn 热重载（适用于开发调试）")
 def serve(
     host: str,
     port: int,
+    reload: bool,
 ) -> None:
     """启动 Web 服务。"""
     from chatgame.web.serve import serve as _serve
     _serve(
         backend_port=port,
         host=host,
+        reload=reload,
     )
 
 

@@ -31,4 +31,5 @@ def test_web_serve_invokes_runtime(mocker):
     serve.assert_called_once_with(
         backend_port=9000,
         host="0.0.0.0",
+        reload=False,
     )
