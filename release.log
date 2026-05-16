@@ -21,3 +21,10 @@
   summary: Release 0.1.3 with playable cow-puzzle Web gameplay, unique-level validation, solver examples, and generation docs.
   pr: https://github.com/ChatArch/ChatGame/pull/4
   publish_run: https://github.com/ChatArch/ChatGame/actions/runs/25945180952
+- time: 2026-05-16T01:10:06Z
+  version: 0.1.7
+  tag: v0.1.7
+  commit: f3e4b04413142da1fc949e33f566abe8502618f6
+  operator: OpenAI Codex
+  summary: Release 0.1.7 with cropped 10x10 screenshot parsing fix and 32660 regression assets.
+  publish_run: https://github.com/ChatArch/ChatGame/actions/runs/25948783297
