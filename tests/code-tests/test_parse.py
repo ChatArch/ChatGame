@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from conftest import IMG_8x8, IMG_10x10
+from conftest import IMG_8x8, IMG_10x10, IMG_10x10_32660, IMG_10x10_32660_CROP
 from chatgame.games.cow_puzzle.parse import parse, cluster_colors
 from chatgame.utils.image import find_grid_bbox, sample_cells, load_image
 
@@ -82,6 +82,14 @@ class TestParse:
     def test_10x10_color_count(self):
         color_ids, _, _ = parse(str(IMG_10x10), n=10)
         assert set(color_ids.flatten()) == set(range(10))
+
+    def test_10x10_crop_matches_full_screenshot(self):
+        full_ids, _, full_bbox = parse(str(IMG_10x10_32660), n=10)
+        crop_ids, _, crop_bbox = parse(str(IMG_10x10_32660_CROP), n=10)
+
+        assert full_bbox[1] < full_bbox[3]
+        assert crop_bbox[1] < crop_bbox[3]
+        assert np.array_equal(crop_ids, full_ids)
 
     def test_8x8_ids_are_sequential_from_top_left(self):
         """ID 按首次出现顺序分配，矩阵左上角必为 0。"""

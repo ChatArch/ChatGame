@@ -1,2 +1,4 @@
 recursive-include src/chatgame/web_static *
 recursive-include src/chatgame/docs *
+recursive-include tests *.py *.md
+recursive-include assets/img *.png *.jpg

@@ -21,7 +21,7 @@ from PIL import Image
 
 from chatgame.web.paths import has_static_assets, package_static_dir
 
-app = FastAPI(title="chatgame API", version="0.1.6")
+app = FastAPI(title="chatgame API", version="0.1.7")
 
 app.add_middleware(
     CORSMiddleware,

@@ -9,3 +9,5 @@ if str(SRC) not in sys.path:
 ASSETS = ROOT / "assets" / "img"
 IMG_8x8  = ASSETS / "cow_puzzle_test2.png"   # 8×8，与 Level 24 同关
 IMG_10x10 = ASSETS / "cow_puzzle_test.png"    # 10×10
+IMG_10x10_32660 = ASSETS / "cow_puzzle_10x10_32660_full.jpg"
+IMG_10x10_32660_CROP = ASSETS / "cow_puzzle_10x10_32660_crop.jpg"

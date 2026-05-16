@@ -74,13 +74,6 @@ def find_grid_bbox(
         dists = np.linalg.norm(arr[:, x].astype(float) - bg, axis=1)
         return float((dists > bg_thresh).mean())
 
-    # 上边界
-    y0 = int(H * top_skip_fraction)
-    for y in range(int(H * top_skip_fraction), H):
-        if row_density(y) >= density:
-            y0 = y
-            break
-
     # 水平边界
     x0 = 0
     for x in range(W):
@@ -94,8 +87,38 @@ def find_grid_bbox(
             x1 = x
             break
 
-    # 下边界（棋盘近似正方形，限制搜索范围）
+    # 优先选择高度接近棋盘宽度的连续高密度行段。这样裁剪图不会因为
+    # 固定跳过顶部比例而错过棋盘上沿。
     grid_width = x1 - x0
+    row_vals = np.array([row_density(y) for y in range(H)])
+    row_runs: list[tuple[int, int]] = []
+    start: int | None = None
+    for y, value in enumerate(row_vals):
+        if value >= density and start is None:
+            start = y
+        elif value < density and start is not None:
+            row_runs.append((start, y - 1))
+            start = None
+    if start is not None:
+        row_runs.append((start, H - 1))
+
+    min_height = grid_width / square_margin
+    candidates = [
+        (abs((end - start) - grid_width), start, end)
+        for start, end in row_runs
+        if (end - start) >= min_height
+    ]
+    if candidates:
+        _, y0, y1 = min(candidates)
+        return x0, y0, x1, y1
+
+    # 兼容兜底：若没有稳定行段，回到原来的顶部跳过 + 正方形限制策略。
+    y0 = int(H * top_skip_fraction)
+    for y in range(int(H * top_skip_fraction), H):
+        if row_density(y) >= density:
+            y0 = y
+            break
+
     y_max = min(H - 1, y0 + int(grid_width * square_margin))
     y1 = y0 + grid_width
     for y in range(y_max, y0, -1):

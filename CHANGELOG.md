@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.7 - 2026-05-16
+
+### Fixed
+
+- Fix 10x10 board detection for cropped screenshots where the top of the board appears above the previous fixed skip threshold.
+- Add regression coverage for the 32660 10x10 screenshot pair so cropped and full screenshots parse to the same color matrix.
+
 ## 0.1.6 - 2026-05-16
 
 ### Added
