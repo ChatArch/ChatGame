@@ -21,7 +21,7 @@ from PIL import Image
 
 from chatgame.web.paths import has_static_assets, package_static_dir
 
-app = FastAPI(title="chatgame API", version="0.1.5")
+app = FastAPI(title="chatgame API", version="0.1.6")
 
 app.add_middleware(
     CORSMiddleware,
@@ -41,7 +41,16 @@ _GAMES = {
     }
 }
 
-_DOCS_DIR = Path(__file__).resolve().parents[2] / "docs" / "games"
+def _resolve_docs_dir() -> Path:
+    # 尝试从安装包内置资源（chatgame/docs/games）获取
+    pkg_dir = Path(__file__).resolve().parent / "docs" / "games"
+    if pkg_dir.exists():
+        return pkg_dir
+    # 回退：开发环境源码外层目录（../../docs/games）
+    dev_dir = Path(__file__).resolve().parents[2] / "docs" / "games"
+    return dev_dir
+
+_DOCS_DIR = _resolve_docs_dir()
 
 _COLOR_TABLE: list[tuple[tuple[int, int, int], str]] = [
     ((128, 185, 254), "蓝"),

@@ -24,7 +24,7 @@ pip install chatgame
 
 ```bash
 chatgame --version
-# chatgame, version 0.1.5
+# chatgame, version 0.1.6
 ```
 
 ---
@@ -81,7 +81,7 @@ chatgame web setup
 
 ```
 ── Python 环境
-  ✓  chatgame 0.1.5
+  ✓  chatgame 0.1.6
   ✓  fastapi 0.136.1
   ✓  uvicorn 0.47.0
 

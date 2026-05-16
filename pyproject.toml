@@ -37,14 +37,11 @@ docs = ["mkdocs>=1.4.0", "mkdocs-material>=9.0.0", "mike>=2.0.0"]
 [tool.setuptools.dynamic]
 version = {attr = "chatgame.__version__"}
 
+[tool.setuptools.package-data]
+chatgame = ["web_static/**/*", "web_static/**/.*", "docs/**/*"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[tool.setuptools]
-include-package-data = true
-
-[tool.setuptools.package-data]
-chatgame = ["web_static/**/*", "web_static/**/.*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

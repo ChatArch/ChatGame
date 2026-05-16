@@ -56,6 +56,25 @@ def test_api_serves_static_assets_and_spa_fallback(tmp_path, monkeypatch):
     assert "chatgame" in client.get("/solve-game").text
 
 
+def test_api_reads_game_docs_from_packaged_directory(tmp_path, monkeypatch):
+    docs_dir = tmp_path / "docs" / "games" / "cow-puzzle"
+    docs_dir.mkdir(parents=True)
+    (docs_dir / "rules.md").write_text("规则正文", encoding="utf-8")
+    (docs_dir / "strategy.md").write_text("攻略正文", encoding="utf-8")
+
+    api = _load_api(monkeypatch, disable_ui=True)
+    monkeypatch.setattr(api, "_DOCS_DIR", tmp_path / "docs" / "games")
+    client = TestClient(api.app)
+
+    response = client.get("/api/games/cow-puzzle/docs")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "rules": "规则正文",
+        "strategy": "攻略正文",
+    }
+
+
 def test_api_returns_404_when_web_ui_disabled(monkeypatch):
     api = _load_api(monkeypatch, disable_ui=True)
     client = TestClient(api.app)

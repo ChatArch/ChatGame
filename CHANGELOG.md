@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.6 - 2026-05-16
+
+### Added
+
+- Package gameplay docs under `chatgame/docs` so installed-mode Web UI can read rules and strategy content.
+
+### Changed
+
+- Make `chatgame web serve` and the docs API read gameplay markdown from package resources in both editable and wheel installs.
+
+### Fixed
+
+- Restore `玩法说明` and `攻略` content after `pip install .` / `pip install -e .` by shipping the markdown files with the Python package.
+- Add an API regression test that checks packaged gameplay docs are returned from `/api/games/cow-puzzle/docs`.
+
 ## 0.1.5 - 2026-05-16
 
 ### Added
