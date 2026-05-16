@@ -29,7 +29,6 @@ export default function PlayDetail() {
   const [loadingDocs, setLoadingDocs] = useState(true)
   const [level, setLevel] = useState(() => getLevelBySize(8))
   const [marks, setMarks] = useState(() => createEmptyMarks(8))
-  const [focusCell, setFocusCell] = useState(null)
   const demoTimersRef = useRef([])
 
   useEffect(() => {
@@ -56,7 +55,6 @@ export default function PlayDetail() {
     const nextLevel = getRandomLevelBySize(size)
     setLevel(nextLevel)
     setMarks(createEmptyMarks(nextLevel.size))
-    setFocusCell(null)
   }
 
   function restart() {
@@ -64,18 +62,15 @@ export default function PlayDetail() {
     const nextLevel = getRandomLevelBySize(level.size, level.id)
     setLevel(nextLevel)
     setMarks(createEmptyMarks(nextLevel.size))
-    setFocusCell(null)
   }
 
   function showSolution() {
     stopDemo()
     setMarks(createEmptyMarks(level.size))
-    setFocusCell(null)
 
     level.solution.forEach(([row, col], index) => {
       const timer = window.setTimeout(() => {
         setMarks(current => toggleMark(current, row, col))
-        setFocusCell({ row, col })
       }, index * 260)
       demoTimersRef.current.push(timer)
     })
@@ -83,20 +78,49 @@ export default function PlayDetail() {
 
   function onCellClick(row, col) {
     stopDemo()
-    setFocusCell(marks[row][col] ? null : { row, col })
     setMarks(current => toggleMark(current, row, col))
   }
 
-  function effectClass(row, col, region) {
-    if (!focusCell) return ''
-    if (focusCell.row === row && focusCell.col === col) return gameStyles.effectOrigin
-    if (Math.abs(focusCell.row - row) <= 1 && Math.abs(focusCell.col - col) <= 1) {
-      return gameStyles.effectAdjacent
+  function effectStyle(influence) {
+    if (!influence || influence.total === 0) return {}
+
+    const shadows = []
+    const totalIntensity = Math.min(influence.total, 12)
+    const sinkDepth = Math.min(14, totalIntensity * 1.35)
+    const borderWidth = Math.min(5, 1 + totalIntensity * 0.22)
+    const regionAlpha = Math.min(0.16 + influence.region * 0.08, 0.52)
+    const columnAlpha = Math.min(0.16 + influence.column * 0.08, 0.56)
+    const rowAlpha = Math.min(0.16 + influence.row * 0.08, 0.56)
+    const adjacentAlpha = Math.min(0.18 + influence.adjacent * 0.1, 0.62)
+    const borderAlpha = Math.min(0.16 + totalIntensity * 0.045, 0.46)
+    let zIndex = influence.origin > 0 ? 3 : 2
+    let filter = `brightness(${Math.max(0.72, 0.98 - totalIntensity * 0.028)}) saturate(${Math.max(0.78, 0.98 - totalIntensity * 0.02)})`
+
+    if (influence.region) shadows.push(`inset 0 0 0 2px rgba(130, 92, 195, ${regionAlpha})`)
+    if (influence.column) shadows.push(`inset 0 0 0 2px rgba(37, 137, 103, ${columnAlpha})`)
+    if (influence.row) shadows.push(`inset 0 0 0 2px rgba(34, 92, 170, ${rowAlpha})`)
+    if (influence.adjacent) shadows.push(`inset 0 0 0 2px rgba(216, 64, 50, ${adjacentAlpha})`)
+
+    shadows.push(
+      `inset 0 ${Math.round(sinkDepth * 0.92)}px ${Math.round(sinkDepth * 1.3)}px rgba(11, 31, 39, ${Math.min(0.1 + totalIntensity * 0.03, 0.32)})`,
+      `inset 0 -${Math.max(1, Math.round(totalIntensity * 0.4))}px ${Math.round(sinkDepth * 0.9)}px rgba(255, 255, 255, ${Math.min(0.08 + totalIntensity * 0.018, 0.22)})`,
+      `inset 0 0 0 ${borderWidth}px rgba(18, 50, 60, ${borderAlpha})`,
+    )
+
+    if (influence.origin) {
+      shadows.push(
+        'inset 0 0 0 4px rgba(255, 255, 255, 0.82)',
+        '0 0 0 2px rgba(18, 50, 60, 0.22)',
+      )
+      filter = `brightness(${Math.min(1.06, 0.9 + influence.origin * 0.04)}) saturate(${Math.min(1.08, 0.94 + influence.origin * 0.04)})`
     }
-    if (focusCell.row === row) return gameStyles.effectRow
-    if (focusCell.col === col) return gameStyles.effectColumn
-    if (level.grid[focusCell.row][focusCell.col] === region) return gameStyles.effectRegion
-    return ''
+
+    return {
+      boxShadow: shadows.length ? shadows.join(', ') : undefined,
+      filter,
+      transform: `translateY(${Math.min(6, totalIntensity * 0.45)}px)`,
+      zIndex,
+    }
   }
 
   return (
@@ -158,8 +182,11 @@ export default function PlayDetail() {
                       <button
                         key={key}
                         type="button"
-                        className={`${gameStyles.cell} ${effectClass(rowIndex, colIndex, region)} ${conflict ? gameStyles.conflict : ''}`}
-                        style={{ backgroundColor: REGION_COLORS[region % REGION_COLORS.length] }}
+                        className={`${gameStyles.cell} ${conflict ? gameStyles.conflict : ''}`}
+                        style={{
+                          backgroundColor: REGION_COLORS[region % REGION_COLORS.length],
+                          ...effectStyle(result.influence[rowIndex][colIndex])
+                        }}
                         onClick={() => onCellClick(rowIndex, colIndex)}
                         aria-pressed={selected}
                         aria-label={`第 ${rowIndex + 1} 行第 ${colIndex + 1} 列，区域 ${region + 1}`}

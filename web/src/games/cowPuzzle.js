@@ -67,6 +67,50 @@ export function evaluateBoard(level, marks) {
   const rowCells = new Map()
   const colCells = new Map()
 
+  const influenceGrid = Array.from({ length: size }, () =>
+    Array.from({ length: size }, () => ({
+      origin: 0,
+      row: 0,
+      column: 0,
+      region: 0,
+      adjacent: 0,
+      total: 0,
+    }))
+  )
+
+  for (const cell of cells) {
+    const r = cell.row
+    const c = cell.col
+    const region = level.grid[r][c]
+
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        const target = influenceGrid[i][j]
+        if (i === r && j === c) {
+          target.origin += 1
+          target.total += 1
+        } else {
+          if (i === r) {
+            target.row += 1
+            target.total += 1
+          }
+          if (j === c) {
+            target.column += 1
+            target.total += 1
+          }
+          if (level.grid[i][j] === region) {
+            target.region += 1
+            target.total += 1
+          }
+          if (Math.abs(i - r) <= 1 && Math.abs(j - c) <= 1) {
+            target.adjacent += 1
+            target.total += 1
+          }
+        }
+      }
+    }
+  }
+
   function addConflict(a, b) {
     conflicts.add(`${a.row}:${a.col}`)
     if (b) conflicts.add(`${b.row}:${b.col}`)
@@ -148,6 +192,7 @@ export function evaluateBoard(level, marks) {
     rowCounts: new Map([...rowCells].map(([key, value]) => [key, value.length])),
     colCounts: new Map([...colCells].map(([key, value]) => [key, value.length])),
     remaining: Math.max(0, size - cells.length),
+    influence: influenceGrid,
   }
 }
 
