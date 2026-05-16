@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -10,7 +10,6 @@ import {
   evaluateBoard,
   getLevelBySize,
   getRandomLevelBySize,
-  marksFromSolution,
   toggleMark,
 } from '../games/cowPuzzle'
 
@@ -31,6 +30,7 @@ export default function PlayDetail() {
   const [level, setLevel] = useState(() => getLevelBySize(8))
   const [marks, setMarks] = useState(() => createEmptyMarks(8))
   const [focusCell, setFocusCell] = useState(null)
+  const demoTimersRef = useRef([])
 
   useEffect(() => {
     fetch(`/api/games/${id}/docs`)
@@ -39,9 +39,20 @@ export default function PlayDetail() {
       .catch(() => setLoadingDocs(false))
   }, [id])
 
+  useEffect(() => () => {
+    demoTimersRef.current.forEach(clearTimeout)
+    demoTimersRef.current = []
+  }, [])
+
   const result = evaluateBoard(level, marks)
 
+  function stopDemo() {
+    demoTimersRef.current.forEach(clearTimeout)
+    demoTimersRef.current = []
+  }
+
   function switchSize(size) {
+    stopDemo()
     const nextLevel = getRandomLevelBySize(size)
     setLevel(nextLevel)
     setMarks(createEmptyMarks(nextLevel.size))
@@ -49,6 +60,7 @@ export default function PlayDetail() {
   }
 
   function restart() {
+    stopDemo()
     const nextLevel = getRandomLevelBySize(level.size, level.id)
     setLevel(nextLevel)
     setMarks(createEmptyMarks(nextLevel.size))
@@ -56,11 +68,22 @@ export default function PlayDetail() {
   }
 
   function showSolution() {
-    setMarks(marksFromSolution(level.size, level.solution))
+    stopDemo()
+    setMarks(createEmptyMarks(level.size))
+    setFocusCell(null)
+
+    level.solution.forEach(([row, col], index) => {
+      const timer = window.setTimeout(() => {
+        setMarks(current => toggleMark(current, row, col))
+        setFocusCell({ row, col })
+      }, index * 260)
+      demoTimersRef.current.push(timer)
+    })
   }
 
   function onCellClick(row, col) {
-    setFocusCell({ row, col })
+    stopDemo()
+    setFocusCell(marks[row][col] ? null : { row, col })
     setMarks(current => toggleMark(current, row, col))
   }
 
@@ -70,7 +93,8 @@ export default function PlayDetail() {
     if (Math.abs(focusCell.row - row) <= 1 && Math.abs(focusCell.col - col) <= 1) {
       return gameStyles.effectAdjacent
     }
-    if (focusCell.row === row || focusCell.col === col) return gameStyles.effectLine
+    if (focusCell.row === row) return gameStyles.effectRow
+    if (focusCell.col === col) return gameStyles.effectColumn
     if (level.grid[focusCell.row][focusCell.col] === region) return gameStyles.effectRegion
     return ''
   }
@@ -136,8 +160,6 @@ export default function PlayDetail() {
                         type="button"
                         className={`${gameStyles.cell} ${effectClass(rowIndex, colIndex, region)} ${conflict ? gameStyles.conflict : ''}`}
                         style={{ backgroundColor: REGION_COLORS[region % REGION_COLORS.length] }}
-                        onMouseEnter={() => setFocusCell({ row: rowIndex, col: colIndex })}
-                        onFocus={() => setFocusCell({ row: rowIndex, col: colIndex })}
                         onClick={() => onCellClick(rowIndex, colIndex)}
                         aria-pressed={selected}
                         aria-label={`第 ${rowIndex + 1} 行第 ${colIndex + 1} 列，区域 ${region + 1}`}
@@ -149,6 +171,16 @@ export default function PlayDetail() {
                   }),
                 )}
               </div>
+
+              {result.solved && (
+                <div className={gameStyles.celebrationPanel} role="status" aria-live="polite">
+                  <div className={gameStyles.celebrationEmoji} aria-hidden="true">🎉</div>
+                  <h3 className={gameStyles.celebrationTitle}>恭喜过关！</h3>
+                  <p className={gameStyles.celebrationText}>
+                    这一局已经满足同行、同列、同色与相邻约束。
+                  </p>
+                </div>
+              )}
             </section>
 
             <aside className={gameStyles.sidePanel}>

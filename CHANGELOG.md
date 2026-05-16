@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.1.5 - 2026-05-16
+
+### Added
+
+- Add a dedicated `🎉` completion panel for solved gameplay boards.
+
+### Changed
+
+- Make `演示解` replay the solution in click order instead of filling the whole board at once.
+- Simplify gameplay feedback so rule hints trigger after clicks instead of on hover.
+
+### Fixed
+
+- Split gameplay exclusion feedback into four stable visual categories: same row, same column, same region, and adjacent.
+- Remove hover-driven motion and pulsing conflict animation so the board no longer jitters while the cursor moves.
+
 ## 0.1.4 - 2026-05-16
 
 ### Added
