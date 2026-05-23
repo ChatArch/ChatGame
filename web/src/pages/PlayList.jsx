@@ -1,15 +1,21 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styles from './Library.module.css'
+import { fallbackGames, fetchJson } from '../lib/api'
 
 export default function PlayList() {
-  const [games, setGames] = useState([])
+  const [games, setGames] = useState(fallbackGames)
 
   useEffect(() => {
-    fetch('/api/games')
-      .then(r => r.json())
-      .then(d => setGames(d.games))
-      .catch(() => setGames([{ id: 'cow-puzzle', name: '奶牛摆放谜题', description: '色块区域约束 · 行列唯一 · 无相邻' }]))
+    let mounted = true
+    fetchJson('/api/games')
+      .then(d => {
+        if (mounted && Array.isArray(d?.games) && d.games.length > 0) {
+          setGames(d.games)
+        }
+      })
+      .catch(() => {})
+    return () => { mounted = false }
   }, [])
 
   return (

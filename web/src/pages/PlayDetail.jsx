@@ -12,6 +12,7 @@ import {
   getRandomLevelBySize,
   toggleMark,
 } from '../games/cowPuzzle'
+import { fallbackDocs, fetchJson } from '../lib/api'
 
 const SIZES = [6, 8, 10]
 
@@ -25,17 +26,17 @@ export default function PlayDetail() {
   const { id } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = searchParams.get('tab') || 'rules'
-  const [docs, setDocs] = useState(null)
-  const [loadingDocs, setLoadingDocs] = useState(true)
+  const [docs, setDocs] = useState(fallbackDocs)
   const [level, setLevel] = useState(() => getLevelBySize(8))
   const [marks, setMarks] = useState(() => createEmptyMarks(8))
   const demoTimersRef = useRef([])
 
   useEffect(() => {
-    fetch(`/api/games/${id}/docs`)
-      .then(r => r.json())
-      .then(d => { setDocs(d); setLoadingDocs(false) })
-      .catch(() => setLoadingDocs(false))
+    let mounted = true
+    fetchJson(`/api/games/${id}/docs`)
+      .then(d => { if (mounted) setDocs({ ...fallbackDocs, ...d }) })
+      .catch(() => {})
+    return () => { mounted = false }
   }, [id])
 
   useEffect(() => () => {
@@ -141,9 +142,7 @@ export default function PlayDetail() {
 
       <div className={styles.content}>
         {tab === 'rules' && (
-          loadingDocs
-            ? <p className={styles.muted}>加载中…</p>
-            : <ReactMarkdown remarkPlugins={[remarkGfm]}>{docs?.rules || '暂无玩法说明'}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{docs.rules}</ReactMarkdown>
         )}
 
         {tab === 'start' && (

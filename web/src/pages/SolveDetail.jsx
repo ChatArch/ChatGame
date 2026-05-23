@@ -5,13 +5,13 @@ import remarkGfm from 'remark-gfm'
 import styles from './LibraryDetail.module.css'
 import solverStyles from './Solver.module.css'
 import { cowPuzzleSamples } from '../games/cowPuzzleSamples'
+import { fallbackDocs, fetchJson } from '../lib/api'
 
 export default function SolveDetail() {
   const { id } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = searchParams.get('tab') || 'strategy'
-  const [docs, setDocs] = useState(null)
-  const [loadingDocs, setLoadingDocs] = useState(true)
+  const [docs, setDocs] = useState(fallbackDocs)
 
   // Solver states
   const [file, setFile] = useState(null)
@@ -23,10 +23,11 @@ export default function SolveDetail() {
   const inputRef = useRef()
 
   useEffect(() => {
-    fetch(`/api/games/${id}/docs`)
-      .then(r => r.json())
-      .then(d => { setDocs(d); setLoadingDocs(false) })
-      .catch(() => setLoadingDocs(false))
+    let mounted = true
+    fetchJson(`/api/games/${id}/docs`)
+      .then(d => { if (mounted) setDocs({ ...fallbackDocs, ...d }) })
+      .catch(() => {})
+    return () => { mounted = false }
   }, [id])
 
   // --- Solver Handlers ---
@@ -77,9 +78,7 @@ export default function SolveDetail() {
     if (sampleSize) fd.append('n', String(sampleSize))
 
     try {
-      const res = await fetch('/api/solve', { method: 'POST', body: fd })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.detail || '求解失败')
+      const data = await fetchJson('/api/solve', { method: 'POST', body: fd }, 60000)
       setResult(data)
     } catch (err) {
       setError(err.message)
@@ -110,11 +109,9 @@ export default function SolveDetail() {
           <div>
             <h2 className={solverStyles.sectionTitle}>玩法与攻略</h2>
             <div style={{ marginBottom: '24px' }}>
-              {loadingDocs ? <p className={styles.muted}>加载中…</p> :
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{docs?.rules || '暂无玩法说明'}</ReactMarkdown>}
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{docs.rules}</ReactMarkdown>
             </div>
-            {loadingDocs ? <p className={styles.muted}>加载中…</p> :
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{docs?.strategy || '暂无游戏攻略'}</ReactMarkdown>}
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{docs.strategy}</ReactMarkdown>
           </div>
         )}
 

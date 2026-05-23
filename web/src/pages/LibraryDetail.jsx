@@ -4,14 +4,14 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import styles from './LibraryDetail.module.css'
 import solverStyles from './Solver.module.css'
+import { fallbackDocs, fetchJson } from '../lib/api'
 
 export default function LibraryDetail() {
   const { id } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   // tabs: 'play' | 'solve'
   const tab = searchParams.get('tab') || 'play'
-  const [docs, setDocs] = useState(null)
-  const [loadingDocs, setLoadingDocs] = useState(true)
+  const [docs, setDocs] = useState(fallbackDocs)
 
   // Solver states
   const [file, setFile] = useState(null)
@@ -22,10 +22,11 @@ export default function LibraryDetail() {
   const inputRef = useRef()
 
   useEffect(() => {
-    fetch(`/api/games/${id}/docs`)
-      .then(r => r.json())
-      .then(d => { setDocs(d); setLoadingDocs(false) })
-      .catch(() => setLoadingDocs(false))
+    let mounted = true
+    fetchJson(`/api/games/${id}/docs`)
+      .then(d => { if (mounted) setDocs({ ...fallbackDocs, ...d }) })
+      .catch(() => {})
+    return () => { mounted = false }
   }, [id])
 
   // --- Solver Handlers ---
@@ -57,9 +58,7 @@ export default function LibraryDetail() {
     fd.append('game', id) // current game id
 
     try {
-      const res = await fetch('/api/solve', { method: 'POST', body: fd })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.detail || '求解失败')
+      const data = await fetchJson('/api/solve', { method: 'POST', body: fd }, 60000)
       setResult(data)
     } catch (err) {
       setError(err.message)
@@ -88,8 +87,7 @@ export default function LibraryDetail() {
             <div className={styles.playHeader}>
               <button className="btn-primary" disabled style={{ marginBottom: '16px' }}>开始玩 (敬请期待)</button>
             </div>
-            {loadingDocs ? <p className={styles.muted}>加载中…</p> : 
-             <ReactMarkdown remarkPlugins={[remarkGfm]}>{docs?.rules || '暂无玩法说明'}</ReactMarkdown>}
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{docs.rules}</ReactMarkdown>
           </div>
         )}
 
@@ -98,8 +96,7 @@ export default function LibraryDetail() {
             {/* 左侧：攻略 */}
             <div className={solverStyles.strategyCol}>
               <h2 className={solverStyles.sectionTitle}>游戏攻略</h2>
-              {loadingDocs ? <p className={styles.muted}>加载中…</p> : 
-               <ReactMarkdown remarkPlugins={[remarkGfm]}>{docs?.strategy || '暂无游戏攻略'}</ReactMarkdown>}
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{docs.strategy}</ReactMarkdown>
             </div>
 
             {/* 右侧：求解器 */}
