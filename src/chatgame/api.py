@@ -10,16 +10,21 @@ from __future__ import annotations
 
 import base64
 import io
+import logging
 import os
+import uuid
 import time
 from pathlib import Path
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from PIL import Image
 
 from chatgame.web.paths import has_static_assets, package_static_dir
+
+logger = logging.getLogger("chatgame.api")
+logger.setLevel(logging.INFO)
 
 app = FastAPI(title="chatgame API", version="0.1.7")
 
@@ -93,6 +98,42 @@ _ASSETS_DIR = _resolve_assets_dir()
 
 # ── 路由 ──────────────────────────────────────────────────────────────────────
 
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    request_id = uuid.uuid4().hex[:8]
+    request.state.request_id = request_id
+    t0 = time.perf_counter()
+    logger.info(
+        "request.start id=%s method=%s path=%s",
+        request_id,
+        request.method,
+        request.url.path,
+    )
+    try:
+        response = await call_next(request)
+    except Exception:
+        elapsed = round((time.perf_counter() - t0) * 1000)
+        logger.exception(
+            "request.error id=%s method=%s path=%s elapsed_ms=%s",
+            request_id,
+            request.method,
+            request.url.path,
+            elapsed,
+        )
+        raise
+
+    elapsed = round((time.perf_counter() - t0) * 1000)
+    logger.info(
+        "request.finish id=%s method=%s path=%s status=%s elapsed_ms=%s",
+        request_id,
+        request.method,
+        request.url.path,
+        response.status_code,
+        elapsed,
+    )
+    return response
+
+
 @app.get("/health")
 @app.get("/api/health")
 def health():
@@ -119,18 +160,35 @@ def game_docs(game_id: str):
 @app.post("/solve")
 @app.post("/api/solve")
 async def solve_puzzle(
+    request: Request,
     image: UploadFile = File(...),
     game: str = Form("cow-puzzle"),
     n: int | None = Form(None),
 ):
+    request_id = getattr(request.state, "request_id", "-")
+    stage_t0 = time.perf_counter()
+
+    def log_stage(stage: str, **extra) -> None:
+        elapsed = round((time.perf_counter() - stage_t0) * 1000)
+        extra_text = " ".join(f"{key}={value}" for key, value in extra.items())
+        logger.info(
+            "solve.%s id=%s elapsed_ms=%s%s",
+            stage,
+            request_id,
+            elapsed,
+            f" {extra_text}" if extra_text else "",
+        )
+
     if game not in _GAMES:
         raise HTTPException(400, f"未知游戏 {game!r}")
     if n is not None and n <= 0:
         raise HTTPException(400, "棋盘边长必须为正整数")
 
     # 读取图像
+    log_stage("start", filename=image.filename, content_type=image.content_type, n=n)
     image.file.seek(0)
     raw = image.file.read()
+    log_stage("read", bytes=len(raw))
     try:
         with Image.open(io.BytesIO(raw)) as img:
             image_width, image_height = img.size
@@ -147,16 +205,29 @@ async def solve_puzzle(
     try:
         t0 = time.perf_counter()
         from chatgame.games.cow_puzzle.parse import parse
-        from chatgame.games.cow_puzzle.solver import find_solutions, verify
+        from chatgame.games.cow_puzzle.solver import (
+            SearchLimitExceeded,
+            find_solutions,
+            verify,
+        )
 
         try:
             color_ids, samples, bbox = parse(tmp_path, n=n)
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from exc
         actual_n = color_ids.shape[0]
+        log_stage("parsed", actual_n=actual_n, bbox=bbox)
 
-        solutions = find_solutions(color_ids, limit=2)
+        try:
+            solutions = find_solutions(color_ids, limit=2, max_nodes=200_000)
+        except SearchLimitExceeded as exc:
+            log_stage("search_limit", max_nodes=200_000)
+            raise HTTPException(
+                422,
+                "求解搜索超限，请确认截图是否清晰，或手动选择正确尺寸后重试",
+            ) from exc
         elapsed = round((time.perf_counter() - t0) * 1000)
+        log_stage("solved", solutions=len(solutions))
 
         if not solutions:
             raise HTTPException(422, "无解，请检查截图是否清晰，或确认当前关卡受支持")
@@ -198,6 +269,7 @@ async def solve_puzzle(
         out_buf = io.BytesIO()
         _annotate_to_buf(tmp_path, solution, bbox, actual_n, out_buf)
         annotated_b64 = base64.b64encode(out_buf.getvalue()).decode()
+        log_stage("annotated", output_bytes=len(out_buf.getvalue()))
 
         return {
             "n": actual_n,

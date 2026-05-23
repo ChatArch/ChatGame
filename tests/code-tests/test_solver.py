@@ -6,7 +6,13 @@
 import numpy as np
 import pytest
 
-from chatgame.games.cow_puzzle.solver import count_solutions, find_solutions, solve, verify
+from chatgame.games.cow_puzzle.solver import (
+    SearchLimitExceeded,
+    count_solutions,
+    find_solutions,
+    solve,
+    verify,
+)
 
 
 # ── 辅助 ─────────────────────────────────────────────────────────────────────
@@ -93,6 +99,11 @@ def test_find_solutions_stops_at_limit_for_non_unique_board():
 
     assert len(solutions) == 2
     assert count_solutions(non_unique, limit=2) == 2
+
+
+def test_find_solutions_raises_when_search_budget_is_exceeded():
+    with pytest.raises(SearchLimitExceeded):
+        find_solutions(_4X4, limit=2, max_nodes=1)
 
 
 # ── 无解情况 ──────────────────────────────────────────────────────────────────

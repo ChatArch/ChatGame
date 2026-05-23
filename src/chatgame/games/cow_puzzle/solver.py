@@ -15,6 +15,10 @@ from typing import Optional
 import numpy as np
 
 
+class SearchLimitExceeded(RuntimeError):
+    """Raised when solution enumeration exceeds the configured search budget."""
+
+
 # ── 内部辅助 ──────────────────────────────────────────────────────────────────
 
 def _build_domains(color_ids: np.ndarray) -> list[list[tuple[int, int]]]:
@@ -149,12 +153,13 @@ def solve(color_ids: np.ndarray) -> Optional[list[tuple[int, int]]]:
 def find_solutions(
     color_ids: np.ndarray,
     limit: int = 2,
+    max_nodes: int | None = None,
 ) -> list[list[tuple[int, int]]]:
     """查找最多 ``limit`` 个解。
 
     ``limit=2`` 用于唯一性判断：找到第二个解即可停止，因为这已经证明
     该局面不是唯一解。返回 ``limit`` 个解表示“至少 limit 个解”，不表示
-    精确只有这么多个解。
+    精确只有这么多个解。``max_nodes`` 用于 API 侧防止异常输入触发过深搜索。
     """
     if limit < 1:
         return []
@@ -166,6 +171,7 @@ def find_solutions(
 
     assignment: list[Optional[tuple[int, int]]] = [None] * n
     solutions: list[list[tuple[int, int]]] = []
+    visited_nodes = 0
 
     def candidates_for(
         color: int,
@@ -211,6 +217,11 @@ def find_solutions(
         used_rows: set[int],
         used_cols: set[int],
     ) -> None:
+        nonlocal visited_nodes
+        visited_nodes += 1
+        if max_nodes is not None and visited_nodes > max_nodes:
+            raise SearchLimitExceeded(f"search node limit exceeded: {max_nodes}")
+
         if len(solutions) >= limit:
             return
         if len(assigned) == n:
