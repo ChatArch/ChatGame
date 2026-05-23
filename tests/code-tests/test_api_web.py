@@ -6,6 +6,8 @@ import numpy as np
 from fastapi.testclient import TestClient
 from PIL import Image
 
+from conftest import IMG_10x10_32660_CROP
+
 
 def _load_api(monkeypatch, assets_dir=None, disable_ui=False):
     if assets_dir is not None:
@@ -84,7 +86,7 @@ def test_api_returns_404_when_web_ui_disabled(monkeypatch):
     assert response.status_code == 404
 
 
-def test_solve_rejects_non_unique_solution(monkeypatch, mocker):
+def test_solve_returns_warning_for_non_unique_solution(monkeypatch, mocker):
     api = _load_api(monkeypatch, disable_ui=True)
     client = TestClient(api.app)
     image_buf = io.BytesIO()
@@ -105,5 +107,33 @@ def test_solve_rejects_non_unique_solution(monkeypatch, mocker):
         files={"image": ("board.png", image_buf.getvalue(), "image/png")},
     )
 
-    assert response.status_code == 422
-    assert "多解" in response.json()["detail"]
+    assert response.status_code == 200
+    data = response.json()
+    assert data["solution_status"] == "multiple"
+    assert "多个合法解" in data["message"]
+    assert data["steps"][0]["row"] == 0
+    assert data["steps"][0]["col"] == 0
+
+
+def test_solve_auto_detects_10x10_upload_without_size(monkeypatch):
+    api = _load_api(monkeypatch, disable_ui=True)
+    client = TestClient(api.app)
+
+    response = client.post(
+        "/api/solve",
+        data={"game": "cow-puzzle"},
+        files={
+            "image": (
+                IMG_10x10_32660_CROP.name,
+                IMG_10x10_32660_CROP.read_bytes(),
+                "image/jpeg",
+            )
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["n"] == 10
+    assert data["solution_status"] == "multiple"
+    assert "多个合法解" in data["message"]
+    assert len(data["steps"]) == 10

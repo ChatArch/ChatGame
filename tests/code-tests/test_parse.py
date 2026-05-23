@@ -5,7 +5,12 @@ import pytest
 
 from conftest import IMG_8x8, IMG_10x10, IMG_10x10_32660, IMG_10x10_32660_CROP
 from chatgame.games.cow_puzzle.parse import parse, cluster_colors
-from chatgame.utils.image import find_grid_bbox, sample_cells, load_image
+from chatgame.utils.image import (
+    estimate_grid_size_from_image,
+    find_grid_bbox,
+    sample_cells,
+    load_image,
+)
 
 
 # ── utils/image ───────────────────────────────────────────────────────────────
@@ -29,6 +34,18 @@ class TestFindGridBbox:
         x0, y0, x1, y1 = find_grid_bbox(arr)
         w, h = x1 - x0, y1 - y0
         assert abs(w - h) / max(w, h) < 0.15
+
+    def test_auto_grid_size_counts_visual_cell_bands(self):
+        cases = [
+            (IMG_8x8, 8),
+            (IMG_10x10_32660, 10),
+            (IMG_10x10_32660_CROP, 10),
+        ]
+
+        for image_path, expected_n in cases:
+            arr = load_image(str(image_path))
+            bbox = find_grid_bbox(arr)
+            assert estimate_grid_size_from_image(arr, bbox) == expected_n
 
 
 class TestSampleCells:
@@ -90,6 +107,11 @@ class TestParse:
         assert full_bbox[1] < full_bbox[3]
         assert crop_bbox[1] < crop_bbox[3]
         assert np.array_equal(crop_ids, full_ids)
+
+    def test_auto_detects_10x10_crop_size(self):
+        color_ids, _, _ = parse(str(IMG_10x10_32660_CROP), n=None)
+
+        assert color_ids.shape == (10, 10)
 
     def test_8x8_ids_are_sequential_from_top_left(self):
         """ID 按首次出现顺序分配，矩阵左上角必为 0。"""

@@ -2,6 +2,7 @@
 
 提供与具体游戏无关的功能：
 - 在截图中定位矩形棋盘的像素包围盒
+- 自动估算棋盘格数
 - 按 N×N 等分采样每格中心像素
 
 设计约定
@@ -23,6 +24,7 @@ DEFAULT_BG: tuple[int, int, int] = (221, 248, 255)
 DEFAULT_BG_THRESH: float = 20.0
 DEFAULT_DENSITY: float = 0.30       # 棋盘行/列至少含此比例的非背景像素
 DEFAULT_SQUARE_MARGIN: float = 1.15  # 搜索下边界时允许的高宽比上限
+DEFAULT_SUPPORTED_SIZES: tuple[int, ...] = (6, 8, 10)
 
 
 def load_image(path: str) -> np.ndarray:
@@ -163,3 +165,70 @@ def sample_cells(
 def estimate_grid_size(x0: int, x1: int, cell_px: int = 50) -> int:
     """根据棋盘宽度和预估格子像素大小推断 N。"""
     return round((x1 - x0) / cell_px)
+
+
+def estimate_grid_size_from_image(
+    arr: np.ndarray,
+    bbox: tuple[int, int, int, int],
+    supported_sizes: tuple[int, ...] = DEFAULT_SUPPORTED_SIZES,
+) -> int:
+    """从棋盘图像中的分隔线/分隔缝推断 N。
+
+    旧实现按固定像素宽度估算格子数，高分辨率 8x8 和 10x10 棋盘宽度
+    接近时会误判。这里改为直接数棋盘内的连续色块条带：官方截图是白色
+    分隔缝，内置示例图是深色网格线，二者都作为分隔区域处理。
+    """
+    x0, y0, x1, y1 = bbox
+    crop = arr[y0 : y1 + 1, x0 : x1 + 1].astype(int)
+    if crop.size == 0:
+        raise ValueError("无法自动识别棋盘尺寸：棋盘区域为空")
+
+    max_channel = crop.max(axis=2)
+    min_channel = crop.min(axis=2)
+    channel_range = max_channel - min_channel
+
+    light_separator = (min_channel > 225) & (channel_range < 45)
+    dark_separator = max_channel < 70
+    cell_mask = ~(light_separator | dark_separator)
+
+    def count_runs(densities: np.ndarray) -> int | None:
+        if densities.size == 0:
+            return None
+
+        window = max(3, int(densities.size * 0.003))
+        if window % 2 == 0:
+            window += 1
+        smoothed = np.convolve(densities, np.ones(window) / window, mode="same")
+
+        low, high = np.percentile(smoothed, [10, 90])
+        if high - low < 0.08:
+            return None
+        threshold = (low + high) / 2
+        min_run = max(3, int(densities.size * 0.02))
+
+        runs = 0
+        start: int | None = None
+        for idx, is_cell_band in enumerate(smoothed > threshold):
+            if is_cell_band and start is None:
+                start = idx
+            elif not is_cell_band and start is not None:
+                if idx - start >= min_run:
+                    runs += 1
+                start = None
+        if start is not None and densities.size - start >= min_run:
+            runs += 1
+        return runs
+
+    col_count = count_runs(cell_mask.mean(axis=0))
+    row_count = count_runs(cell_mask.mean(axis=1))
+    counts = [count for count in (row_count, col_count) if count in supported_sizes]
+
+    if row_count == col_count and row_count in supported_sizes:
+        return int(row_count)
+    if len(counts) == 1:
+        return int(counts[0])
+
+    supported = " / ".join(str(size) for size in supported_sizes)
+    raise ValueError(
+        f"无法自动识别棋盘尺寸，请选择 {supported} 或上传更清晰截图"
+    )

@@ -13,7 +13,7 @@ from chatgame.utils.image import (
     load_image,
     find_grid_bbox,
     sample_cells,
-    estimate_grid_size,
+    estimate_grid_size_from_image,
 )
 
 
@@ -65,7 +65,7 @@ def parse(
     image_path:
         游戏截图路径。
     n:
-        棋盘边长。``None`` 时自动推断（按格子约 50 px 估算）。
+        棋盘边长。``None`` 时根据棋盘分隔线自动推断 6/8/10。
 
     Returns
     -------
@@ -81,7 +81,7 @@ def parse(
     x0, y0, x1, y1 = bbox
 
     if n is None:
-        n = estimate_grid_size(x0, x1)
+        n = estimate_grid_size_from_image(arr, bbox)
 
     samples = sample_cells(arr, x0, y0, x1, y1, n)
     color_ids = cluster_colors(samples, n)

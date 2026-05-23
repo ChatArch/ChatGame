@@ -166,6 +166,18 @@ export default function SolveDetail() {
               {result ? (
                 <div className={solverStyles.resultStage}>
                   <div className={solverStyles.annotatedWrap}>
+                    <div
+                      className={`${solverStyles.resultNotice} ${
+                        result.solution_status === 'multiple'
+                          ? solverStyles.resultWarning
+                          : solverStyles.resultOk
+                      }`}
+                    >
+                      <strong>
+                        {result.solution_status === 'multiple' ? '多解提示' : '唯一解'}
+                      </strong>
+                      <span>{result.message || '已找到可用解。'}</span>
+                    </div>
                     <img
                       src={`data:image/png;base64,${result.annotated_image}`}
                       alt="标注结果"

@@ -37,7 +37,7 @@ _GAMES = {
         "id": "cow-puzzle",
         "name": "奶牛摆放谜题",
         "description": "色块区域约束 · 行列唯一 · 无相邻，N-Queens 变体",
-        "default_n": 8,
+        "supported_sizes": [6, 8, 10],
     }
 }
 
@@ -125,12 +125,12 @@ async def solve_puzzle(
 ):
     if game not in _GAMES:
         raise HTTPException(400, f"未知游戏 {game!r}")
-    game_cfg = _GAMES[game]
-    if n is None:
-        n = game_cfg.get("default_n")
+    if n is not None and n <= 0:
+        raise HTTPException(400, "棋盘边长必须为正整数")
 
     # 读取图像
-    raw = await image.read()
+    image.file.seek(0)
+    raw = image.file.read()
     try:
         with Image.open(io.BytesIO(raw)) as img:
             image_width, image_height = img.size
@@ -149,7 +149,10 @@ async def solve_puzzle(
         from chatgame.games.cow_puzzle.parse import parse
         from chatgame.games.cow_puzzle.solver import find_solutions, verify
 
-        color_ids, samples, bbox = parse(tmp_path, n=n)
+        try:
+            color_ids, samples, bbox = parse(tmp_path, n=n)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
         actual_n = color_ids.shape[0]
 
         solutions = find_solutions(color_ids, limit=2)
@@ -157,13 +160,17 @@ async def solve_puzzle(
 
         if not solutions:
             raise HTTPException(422, "无解，请检查截图是否清晰，或确认当前关卡受支持")
-        if len(solutions) > 1:
-            raise HTTPException(422, "当前截图存在多解，无法给出唯一求解步骤")
 
         solution = solutions[0]
         errors = verify(color_ids, solution)
         if errors:
             raise HTTPException(422, f"解验证失败: {errors}")
+        solution_status = "multiple" if len(solutions) > 1 else "unique"
+        message = (
+            "当前截图存在多个合法解，已先给出其中一个；建议确认关卡是否应为唯一解。"
+            if solution_status == "multiple"
+            else "已找到唯一解。"
+        )
 
         # 颜色名称
         color_names = [
@@ -194,6 +201,10 @@ async def solve_puzzle(
 
         return {
             "n": actual_n,
+            "solution_status": solution_status,
+            "solution_count": len(solutions),
+            "solution_count_limit": 2,
+            "message": message,
             "steps": steps,
             "grid": grid,
             "grid_bbox": bbox,
