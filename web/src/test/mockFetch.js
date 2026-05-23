@@ -31,7 +31,7 @@ export function jsonResponse(body, init = {}) {
 }
 
 export function imageResponse() {
-  return new Response(new Blob(['fake image'], { type: 'image/png' }), {
+  return new Response(new Uint8Array([137, 80, 78, 71]), {
     status: 200,
     headers: { 'Content-Type': 'image/png' },
   })
