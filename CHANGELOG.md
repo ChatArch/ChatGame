@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.8 - 2026-05-24
+
+### Added
+
+- Add Vitest component coverage and Playwright browser E2E coverage for the Web UI core paths.
+- Add CI verification that rebuilt `src/chatgame/web_static` is committed when frontend sources change.
+- Document the frontend testing workflow and expand CI/package/install-smoke gates for packaged Web assets.
+
+### Changed
+
+- Build packaged Web static assets before package/install-smoke checks so wheel validation matches the published artifact.
+
 ## 0.1.7 - 2026-05-16
 
 ### Fixed
