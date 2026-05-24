@@ -28,3 +28,11 @@
   operator: OpenAI Codex
   summary: Release 0.1.7 with cropped 10x10 screenshot parsing fix and 32660 regression assets.
   publish_run: https://github.com/ChatArch/ChatGame/actions/runs/25948783297
+- time: 2026-05-24T02:15:27Z
+  version: 0.1.8
+  tag: v0.1.8
+  commit: 8f6bfa1a0fa40501c3712a2bddcb20a4471de553
+  operator: OpenAI Codex
+  summary: Release 0.1.8 with frontend component tests, Playwright E2E, packaged web_static sync validation, and expanded Web asset CI/install-smoke gates.
+  pr: https://github.com/ChatArch/ChatGame/pull/6
+  publish_run: https://github.com/ChatArch/ChatGame/actions/runs/26349400816
