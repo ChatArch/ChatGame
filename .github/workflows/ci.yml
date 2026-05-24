@@ -51,6 +51,14 @@ jobs:
         working-directory: web
         run: npm run build:static
 
+      - name: Verify packaged static assets are committed
+        run: |
+          if ! git diff --quiet -- src/chatgame/web_static; then
+            echo "src/chatgame/web_static is out of date. Run: cd web && npm run build:static"
+            git diff -- src/chatgame/web_static
+            exit 1
+          fi
+
   e2e:
     runs-on: ubuntu-latest
     steps:
