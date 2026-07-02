@@ -77,6 +77,67 @@ def test_api_reads_game_docs_from_packaged_directory(tmp_path, monkeypatch):
     }
 
 
+def test_contribution_wizard_generates_and_approves_prd(tmp_path, monkeypatch):
+    monkeypatch.setenv("CHATGAME_CONTRIBUTIONS_DIR", str(tmp_path / "contributions"))
+    api = _load_api(monkeypatch, disable_ui=True)
+    client = TestClient(api.app)
+    image_buf = io.BytesIO()
+    Image.new("RGB", (8, 8), (255, 255, 255)).save(image_buf, format="PNG")
+
+    response = client.post(
+        "/api/contributions",
+        data={
+            "name": "数独",
+            "target": "play_and_solve",
+            "rules": "9x9 数独，每行每列和每个 3x3 宫都不能重复，填满后过关。",
+        },
+        files={"image": ("sudoku.png", image_buf.getvalue(), "image/png")},
+    )
+
+    assert response.status_code == 200
+    job = response.json()
+    assert job["status"] == "needs_clarification"
+    question_ids = {question["id"] for question in job["understanding"]["questions"]}
+    assert {"solver_output", "screenshot_parse", "scope_version"}.issubset(question_ids)
+
+    response = client.post(
+        f"/api/contributions/{job['job_id']}/answers",
+        json={
+            "answers": [
+                {"question_id": "solver_output", "value": "full_solution"},
+                {"question_id": "screenshot_parse", "value": "later"},
+                {"question_id": "scope_version", "value": "prd_only"},
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+    job = response.json()
+    assert job["status"] == "understanding_ready"
+    assert job["understanding"]["sufficient"] is True
+
+    response = client.post(f"/api/contributions/{job['job_id']}/generate-prd")
+    assert response.status_code == 200
+    job = response.json()
+    assert job["status"] == "prd_ready"
+    assert "# 数独 接入 PRD" in job["prd"]
+
+    response = client.post(f"/api/contributions/{job['job_id']}/approve-prd")
+    assert response.status_code == 200
+    job = response.json()
+    assert job["status"] == "review_pending"
+    assert "维护者 review" in job["review"]["message"]
+
+    games = client.get("/api/games").json()["games"]
+    pending = [game for game in games if game.get("status") == "pending_review"]
+    assert pending[0]["name"] == "数独"
+    assert pending[0]["badge"] == "待评审"
+
+    artifact = client.get(f"/api/contributions/{job['job_id']}/artifacts/PRD.md")
+    assert artifact.status_code == 200
+    assert "安全约束" in artifact.text
+
+
 def test_api_returns_404_when_web_ui_disabled(monkeypatch):
     api = _load_api(monkeypatch, disable_ui=True)
     client = TestClient(api.app)

@@ -21,6 +21,8 @@ chatgame solve level24.png -o solved.png
 
 → 详细步骤见 [快速上手](quickstart.md)
 
+→ 新游戏接入流程见 [接入新游戏向导](contribute-wizard.md)
+
 ---
 
 ## 功能一览
