@@ -3,6 +3,8 @@ export const fallbackGames = [
     id: 'cow-puzzle',
     name: '奶牛摆放谜题',
     description: '色块区域约束 · 行列唯一 · 无相邻',
+    status: 'supported',
+    badge: '已支持',
   },
 ]
 

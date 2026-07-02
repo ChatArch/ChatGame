@@ -28,7 +28,7 @@ test('navigation pages render without browser console errors', async ({ page }) 
 
   await page.getByRole('link', { name: '接入游戏' }).click()
   await expect(page).toHaveURL(/\/contribute$/)
-  await expect(page.getByRole('heading', { name: '添加新游戏' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '接入新游戏向导' })).toBeVisible()
 
   expect(errors).toEqual([])
 })
