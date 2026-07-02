@@ -144,6 +144,45 @@ def test_contribution_prd_review_flow(tmp_path, monkeypatch):
     assert pending[0]["github_url"].startswith("https://github.com/")
 
 
+def test_contribution_preserves_clarification_labels_in_prd(tmp_path, monkeypatch):
+    api = _load_api(monkeypatch, disable_ui=True)
+    monkeypatch.setattr(api, "_CONTRIBUTIONS_ROOT", tmp_path / "contributions")
+    client = TestClient(api.app)
+    image_buf = io.BytesIO()
+    Image.new("RGB", (40, 40), (255, 255, 255)).save(image_buf, format="PNG")
+
+    created = client.post(
+        "/api/contributions",
+        data={
+            "name": "网格谜题",
+            "rules": "棋盘上需要根据区域限制摆放棋子。",
+            "target_type": "playable",
+        },
+        files={"image": ("grid.png", image_buf.getvalue(), "image/png")},
+    )
+
+    assert created.status_code == 200
+    job = created.json()
+    assert job["status"] == "needs_clarification"
+
+    answers = [
+        {
+            "question_id": question["id"],
+            "value": question["options"][0]["value"],
+        }
+        for question in job["understanding"]["questions"]
+    ]
+    answered = client.post(f"/api/contributions/{job['id']}/answers", json={"answers": answers})
+    assert answered.status_code == 200
+
+    prd = client.post(f"/api/contributions/{job['id']}/generate-prd")
+
+    assert prd.status_code == 200
+    prd_text = prd.json()["prd"]
+    assert "第一版棋盘结构如何限定" in prd_text
+    assert "固定行列网格" in prd_text
+
+
 def test_contribution_rejects_non_image_upload(tmp_path, monkeypatch):
     api = _load_api(monkeypatch, disable_ui=True)
     monkeypatch.setattr(api, "_CONTRIBUTIONS_ROOT", tmp_path / "contributions")

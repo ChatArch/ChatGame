@@ -236,7 +236,16 @@ def _validate_answers(job: dict, answers: list[dict]) -> list[dict]:
             value = [_sanitize_text(str(v), 80) for v in value[:5]]
         else:
             value = str(value)[:80]
-        cleaned.append({"question_id": question_id, "value": value})
+        option_map = {opt["value"]: opt["label"] for opt in question.get("options", [])}
+        value_label = option_map.get(value, value if isinstance(value, str) else str(value))
+        cleaned.append(
+            {
+                "question_id": question_id,
+                "question": question.get("question", question_id),
+                "value": value,
+                "value_label": value_label,
+            }
+        )
     return cleaned
 
 
@@ -248,7 +257,9 @@ def _answer_text(job: dict) -> str:
         option_map = {opt["value"]: opt["label"] for opt in question.get("options", [])}
         value = answer["value"]
         value_key = value if isinstance(value, str) else str(value)
-        labels.append(f"- {question.get('question', answer['question_id'])}: {option_map.get(value_key, value_key)}")
+        question_text = answer.get("question") or question.get("question", answer["question_id"])
+        answer_text = answer.get("value_label") or option_map.get(value_key, value_key)
+        labels.append(f"- {question_text}: {answer_text}")
     return "\n".join(labels) if labels else "- 暂无补充答案"
 
 

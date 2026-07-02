@@ -4,7 +4,23 @@
 
 ![Contribute wizard flow](assets/contribute-wizard-flow.svg)
 
-![Contribute upload step](assets/contribute-wizard-upload.png)
+## 流程截图
+
+1. 提交资料页：用户填写游戏名称、规则、接入目标并上传截图。
+
+![Contribute upload step](assets/contribute-flow-1-upload.png)
+
+2. 模型分析页：系统判断资料完整性，并在发现模糊点时给出候选选项或确认按钮。
+
+![Contribute model analysis step](assets/contribute-flow-2-analysis.png)
+
+3. 用户 Review 页：用户查看生成的 PRD，可以编辑、返回模型分析，或确认进入工作流。
+
+![Contribute user review step](assets/contribute-flow-3-user-review.png)
+
+4. 正式提交页：进入 `review_pending`，提示用户等待维护者 review，并提供 GitHub 进展入口。
+
+![Contribute submitted step](assets/contribute-flow-4-submitted.png)
 
 ## 定位
 
@@ -148,7 +164,7 @@
 
 ### `POST /api/contributions/{job_id}/edit-prd`
 
-保存用户编辑后的 PRD。保存后回到 `prd_ready`，用户可以再次提交 review。
+保存用户编辑后的 PRD。保存后回到 `prd_ready`，用户可以再次 Review 并确认进入工作流。
 
 ```json
 {
