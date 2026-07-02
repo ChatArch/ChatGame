@@ -13,6 +13,10 @@
         <link rel="canonical" href="https://chatarch.github.io/ChatGame/dev/contribute-wizard/">
       
       
+        <link rel="prev" href="../cli/">
+      
+      
+        <link rel="next" href="../frontend-testing/">
       
       
         
@@ -23,7 +27,7 @@
     
     
       
-        <title>接入新游戏向导 - chatgame</title>
+        <title>Contribute 接入向导 - chatgame</title>
       
     
     
@@ -74,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
+        <a href="#contribute" class="md-skip">
           跳转至
         </a>
       
@@ -108,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              接入新游戏向导
+              Contribute 接入向导
             
           </span>
         </div>
@@ -250,6 +254,27 @@
     
   
   CLI 参考
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contribute 接入向导
 
       </a>
     </li>
@@ -454,6 +479,317 @@
       
   
   
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribute 接入向导
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribute 接入向导
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        流程截图
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        定位
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么不是开放聊天
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        用户侧使用教程
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        管理员侧处理说明
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        用户流程
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#submit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submit 后交付什么
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数独样例说明
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        测试覆盖
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        状态机
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        常规接口
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="常规接口">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apicontributionsjob_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/contributions/{job_id}
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributionsjob_idanswers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions/{job_id}/answers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributionsjob_idgenerate-prd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions/{job_id}/generate-prd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributionsjob_idedit-prd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions/{job_id}/edit-prd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributionsjob_idsubmit-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions/{job_id}/submit-review
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apicontributionsjob_idartifactsprdmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/contributions/{job_id}/artifacts/PRD.md
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apigames" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/games
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        存储结构
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        后续升级
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
   
   
     <li class="md-nav__item">
@@ -497,10 +833,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
             
   
   
@@ -518,8 +854,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -549,10 +885,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_1" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1" >
         
           
-          <label class="md-nav__link" for="__nav_5_1" id="__nav_5_1_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_6_1" id="__nav_6_1_label" tabindex="0">
             
   
   
@@ -570,8 +906,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_1_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5_1">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_1">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -762,10 +1098,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        流程截图
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        目标
+        定位
       
     </span>
   </a>
@@ -776,7 +1123,7 @@
   <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        安全边界
+        为什么不是开放聊天
       
     </span>
   </a>
@@ -787,7 +1134,7 @@
   <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        状态流转
+        用户侧使用教程
       
     </span>
   </a>
@@ -795,33 +1142,88 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#api" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        API
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="API">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        创建接入任务
+        管理员侧处理说明
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#_6" class="md-nav__link">
     <span class="md-ellipsis">
       
-        提交有限问题答案
+        用户流程
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#submit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submit 后交付什么
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数独样例说明
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        测试覆盖
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        状态机
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        常规接口
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="常规接口">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions
       
     </span>
   </a>
@@ -829,10 +1231,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#prd" class="md-nav__link">
+  <a href="#get-apicontributionsjob_id" class="md-nav__link">
     <span class="md-ellipsis">
       
-        生成 PRD
+        GET /api/contributions/{job_id}
       
     </span>
   </a>
@@ -840,10 +1242,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#review" class="md-nav__link">
+  <a href="#post-apicontributionsjob_idanswers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        提交维护者 review
+        POST /api/contributions/{job_id}/answers
       
     </span>
   </a>
@@ -851,10 +1253,54 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#prd_1" class="md-nav__link">
+  <a href="#post-apicontributionsjob_idgenerate-prd" class="md-nav__link">
     <span class="md-ellipsis">
       
-        查看 PRD
+        POST /api/contributions/{job_id}/generate-prd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributionsjob_idedit-prd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions/{job_id}/edit-prd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributionsjob_idsubmit-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions/{job_id}/submit-review
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apicontributionsjob_idartifactsprdmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/contributions/{job_id}/artifacts/PRD.md
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apigames" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/games
       
     </span>
   </a>
@@ -867,10 +1313,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
+  <a href="#_11" class="md-nav__link">
     <span class="md-ellipsis">
       
-        游戏列表展示
+        存储结构
       
     </span>
   </a>
@@ -878,10 +1324,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
+  <a href="#_12" class="md-nav__link">
     <span class="md-ellipsis">
       
-        原型截图
+        后续升级
       
     </span>
   </a>
@@ -908,88 +1354,194 @@
   
 
 
-<h1 id="_1">接入新游戏向导</h1>
-<p><code>/contribute</code> 是一个受限交互式游戏接入入口，用于把用户上传的游戏截图和规则描述沉淀成可 review 的 PRD，而不是直接让模型开始改代码。</p>
-<h2 id="_2">目标</h2>
+<h1 id="contribute">Contribute 接入向导</h1>
+<p><code>/contribute</code> 是一个受限交互式 PRD 向导，用来把外部用户的游戏接入想法转成可 review 的设计文档。</p>
+<p><img alt="Contribute wizard flow" src="../assets/contribute-wizard-flow.svg" /></p>
+<h2 id="_1">流程截图</h2>
+<ol>
+<li>提交资料页：用户填写游戏名称、规则、接入目标并上传截图。</li>
+</ol>
+<p><img alt="Contribute upload step" src="../assets/contribute-flow-1-upload.png" /></p>
+<ol>
+<li>模型分析页：系统判断资料完整性，并在发现模糊点时给出候选选项或确认按钮。</li>
+</ol>
+<p><img alt="Contribute model analysis step" src="../assets/contribute-flow-2-analysis.png" /></p>
+<ol>
+<li>用户 Review 页：用户查看生成的 PRD，可以编辑、返回模型分析，或确认进入工作流。</li>
+</ol>
+<p><img alt="Contribute user review step" src="../assets/contribute-flow-3-user-review.png" /></p>
+<ol>
+<li>正式提交页：进入 <code>review_pending</code>，提示用户等待维护者 review，并提供 GitHub 进展入口。</li>
+</ol>
+<p><img alt="Contribute submitted step" src="../assets/contribute-flow-4-submitted.png" /></p>
+<h2 id="_2">定位</h2>
+<p>这个页面不直接开工、不直接执行代码、不自动创建 PR。它的核心流程是：</p>
+<ol>
+<li>收集游戏截图、规则描述和接入目标。</li>
+<li>进入模型分析环节，判断资料是否足够支撑完整 PRD。</li>
+<li>如果模型发现模糊点，再用固定问题和按钮让用户补充或确认；如果没有模糊点，直接进入 PRD。</li>
+<li>生成 PRD 后进入用户 Review，用户可以返回上一步继续补充，也可以确认进入后续工作流。</li>
+</ol>
+<h2 id="_3">为什么不是开放聊天</h2>
+<p>开放聊天太灵活，上传图片或规则里可能包含 prompt injection，例如“忽略系统指令”“执行命令”“泄露密钥”。当前设计把模型能力限制在文档整理阶段：</p>
 <ul>
-<li>用户可以提交游戏名称、截图、规则描述和接入目标。</li>
-<li>系统先判断资料是否足够，不足时只提出有限问题。</li>
-<li>用户通过固定选项或短文本补充，不提供开放式指令执行入口。</li>
-<li>资料足够后生成 PRD 草稿。</li>
-<li>用户点击提交后进入 <code>review_pending</code>，等待维护者 review。</li>
-<li>已提交 review 的游戏会以 <code>待评审</code> 状态出现在游戏列表中，并提供 GitHub 进展入口。</li>
+<li>图片和规则永远只是数据，不是系统指令。</li>
+<li>分析结果使用固定 JSON 结构。</li>
+<li>用户补充只支持有限选项。</li>
+<li>前端按钮是白名单动作，模型不能发明动作。</li>
+<li><code>review_pending</code> 前后都不会运行 shell、修改仓库或上线。</li>
 </ul>
-<h2 id="_3">安全边界</h2>
-<p>当前版本不做以下事情：</p>
+<h2 id="_4">用户侧使用教程</h2>
+<p>面向提交游戏接入需求的普通用户，页面目标是把想法整理成可 review 的 PRD，而不是直接启动开发。</p>
+<ol>
+<li>打开 <code>/contribute</code>，填写游戏名称、接入目标、规则描述，并上传截图。</li>
+<li>提交后进入“模型分析”。模型会判断资料是否足够形成完整 PRD。</li>
+<li>如果没有明显模糊点，用户可以直接生成 PRD。</li>
+<li>如果模型发现模糊点，页面会展示候选问题、选项或确认按钮；用户选择后，模型重新整理分析结果。</li>
+<li>进入“用户 Review”后，用户可以阅读、编辑 PRD，也可以返回模型分析继续补充。</li>
+<li>用户点击“确认并进入工作流”后，页面提示已提交，后续等待维护者 review。</li>
+<li>用户可以通过页面里的 GitHub 入口查看项目进展。</li>
+</ol>
+<p>用户侧需要明确的边界：提交不代表游戏已经上线，也不代表系统已经开始写代码；它只表示需求已经进入后续工作流。</p>
+<h2 id="_5">管理员侧处理说明</h2>
+<p>面向维护者/管理员，当前版本的目标是收集可审核材料，并把待评审申请暴露到游戏列表，而不是自动执行实现。</p>
+<p>管理员需要 review 的内容：</p>
 <ul>
-<li>不执行用户上传内容中的命令或提示词。</li>
-<li>不运行 shell。</li>
-<li>不修改仓库。</li>
-<li>不创建 PR。</li>
-<li>不直接上线新游戏。</li>
+<li>用户确认后的 <code>PRD.md</code> 是否清楚描述了游戏目标、规则和验收标准。</li>
+<li><code>model-understanding.json</code> 中的 <code>confidence</code>、<code>sufficient</code> 和 <code>risk_flags</code> 是否合理。</li>
+<li>如果存在 <code>answers.json</code>，检查用户对模糊点的选择是否足以消除歧义。</li>
+<li><code>events.jsonl</code> 是否显示正常流程，没有异常重复提交或可疑输入。</li>
+<li>游戏列表里的“待评审”卡片是否只提供 GitHub 进展入口，没有开放真实 play/solve 能力。</li>
 </ul>
-<p>后续如果要进入 GameSpec、代码生成、测试或 PR 阶段，应在 <code>review_pending</code> 后增加维护者确认流程。</p>
-<h2 id="_4">状态流转</h2>
-<pre><code class="language-text">uploaded
-  -&gt; needs_clarification
-  -&gt; understanding_ready
-  -&gt; prd_ready
-  -&gt; review_pending
+<p>管理员处理建议：</p>
+<ol>
+<li>如果 PRD 不完整，后续可把申请标记为 <code>needs_edit</code>，让用户回到 Review 或模型分析环节继续补充；当前版本先保留状态语义，不提供公开管理员后台。</li>
+<li>如果 PRD 可以接受，再决定是否进入下一阶段，例如生成 <code>GameSpec.json</code> 或实现计划。</li>
+<li>真实开发必须在隔离工作区或分支内进行，不能直接把用户上传内容用于 shell、依赖安装、仓库写入或发布。</li>
+<li>后续如果要创建 PR，应由维护者触发，而不是由用户 submit 自动触发。</li>
+</ol>
+<h2 id="_6">用户流程</h2>
+<pre><code class="language-text">上传截图 + 规则
+  -&gt; 模型分析资料完整性
+  -&gt; 如有模糊点，展示候选问题 / 确认按钮
+  -&gt; 用户选择确认，或让模型继续分析
+  -&gt; 生成 PRD
+  -&gt; 用户 Review PRD，可返回模型分析继续补充
+  -&gt; 用户确认进入后续工作流
+  -&gt; 当前状态进入 review_pending，等待维护者 review
 </code></pre>
+<p>进入后续工作流后，用户看到的是“已提交，后续维护者会 review”。同时页面给出 GitHub 项目入口，让用户知道可以在 GitHub 查看项目进展。</p>
+<h2 id="submit">Submit 后交付什么</h2>
+<p>用户点击“确认并进入工作流”后，系统不会直接实现游戏，也不会创建 PR。当前版本会交付这些内容给维护者 review：</p>
 <ul>
-<li><code>needs_clarification</code>：资料不足，等待用户回答有限问题。</li>
-<li><code>understanding_ready</code>：资料足够，可以生成 PRD。</li>
-<li><code>prd_ready</code>：PRD 草稿已生成，等待用户提交 review。</li>
-<li><code>review_pending</code>：接入申请已提交，等待维护者 review。</li>
+<li><code>job.json</code>: 接入申请的结构化状态，包括 <code>status=review_pending</code>、游戏名称、接入目标、图片尺寸、模型分析结果和 GitHub 链接。</li>
+<li><code>PRD.md</code>: 用户确认过的需求文档，是后续维护者判断是否开工的主要输入。</li>
+<li><code>model-understanding.json</code>: 模型分析阶段的结构化理解，包括 <code>sufficient</code>、<code>confidence</code>、<code>risk_flags</code> 和发现的模糊点。</li>
+<li><code>answers.json</code>: 如果模型分析发现模糊点，这里保存用户对候选问题的选择或确认。</li>
+<li><code>events.jsonl</code>: 审计日志，记录创建、补充、生成 PRD、编辑 PRD、提交工作流等状态变化。</li>
+<li>游戏列表中的“待评审”卡片：只展示状态和 GitHub 进展入口，不展示“开始游戏”或“自动求解”。</li>
 </ul>
-<h2 id="api">API</h2>
-<h3 id="_5">创建接入任务</h3>
-<pre><code class="language-text">POST /api/contributions
-</code></pre>
-<p>表单字段：</p>
+<p>维护者拿到这些材料后，再决定是否进入真实开发阶段。真实开发阶段可以在后续版本中继续拆成 <code>GameSpec</code>、实现计划、代码 patch、测试和 PR。</p>
+<h2 id="_7">数独样例说明</h2>
+<p>当前测试里使用“数独”作为端到端样例，是为了验证模型分析、PRD 生成、用户 Review 和 <code>review_pending</code> 列表展示流程。它不是本次改动新增的内置游戏，也不会因为测试通过而自动上线。</p>
+<h2 id="_8">测试覆盖</h2>
+<p>当前测试主要覆盖流程和安全边界：</p>
 <ul>
-<li><code>name</code>：游戏名称。</li>
-<li><code>rules</code>：规则描述。</li>
-<li><code>target</code>：<code>rules_only</code>、<code>playable</code>、<code>solver</code>、<code>play_and_solve</code>。</li>
-<li><code>image</code>：PNG/JPG/WebP，单张不超过 5MB。</li>
+<li>后端 contribution 流程：上传截图、模型分析、生成 PRD、编辑 PRD、确认进入工作流、进入 <code>review_pending</code>。</li>
+<li>上传限制：非图片类型会被拒绝。</li>
+<li>游戏列表：<code>review_pending</code> 申请会展示为“待评审”，并只提供 GitHub 进展入口。</li>
+<li>前端构建和 lint：确保 <code>/contribute</code> 页面、列表页和文档资源不会破坏现有 Web 构建。</li>
+<li>文档构建：<code>mkdocs build --strict</code> 确保新增教程、管理员说明和图片资源可被文档站点加载。</li>
 </ul>
-<h3 id="_6">提交有限问题答案</h3>
-<pre><code class="language-text">POST /api/contributions/{job_id}/answers
-</code></pre>
+<h2 id="_9">状态机</h2>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>needs_clarification</code></td>
+<td>模型分析发现模糊点，等待用户选择、确认或补充</td>
+</tr>
+<tr>
+<td><code>understanding_ready</code></td>
+<td>模型分析完成，资料足够，可以生成 PRD</td>
+</tr>
+<tr>
+<td><code>prd_ready</code></td>
+<td>PRD 已生成，等待用户 Review；用户可编辑、返回上一步或确认进入工作流</td>
+</tr>
+<tr>
+<td><code>review_pending</code></td>
+<td>用户已确认进入工作流，当前等待维护者 review，不启动实现</td>
+</tr>
+<tr>
+<td><code>needs_edit</code></td>
+<td>维护者要求用户修改后再提交</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_10">常规接口</h2>
+<h3 id="post-apicontributions"><code>POST /api/contributions</code></h3>
+<p>创建接入申请，使用 <code>multipart/form-data</code>。</p>
+<p>字段：</p>
+<ul>
+<li><code>name</code>: 游戏名称。</li>
+<li><code>rules</code>: 游戏规则描述。</li>
+<li><code>target_type</code>: <code>docs_only</code>、<code>playable</code>、<code>solver</code>、<code>playable_solver</code>。</li>
+<li><code>image</code>: PNG、JPG 或 WebP，最大 5MB。</li>
+</ul>
+<p>返回 contribution job，包含 <code>status</code>、<code>understanding</code>、<code>questions</code> 等字段。</p>
+<h3 id="get-apicontributionsjob_id"><code>GET /api/contributions/{job_id}</code></h3>
+<p>读取当前任务状态和 PRD 草稿。</p>
+<h3 id="post-apicontributionsjob_idanswers"><code>POST /api/contributions/{job_id}/answers</code></h3>
+<p>提交模型分析阶段发现的模糊点答案。只有 <code>status=needs_clarification</code> 时才需要用户回答；如果模型没有发现模糊点，可以直接生成 PRD。</p>
 <pre><code class="language-json">{
   &quot;answers&quot;: [
-    {&quot;question_id&quot;: &quot;solver_output&quot;, &quot;value&quot;: &quot;full_solution&quot;},
-    {&quot;question_id&quot;: &quot;screenshot_parse&quot;, &quot;value&quot;: &quot;later&quot;},
-    {&quot;question_id&quot;: &quot;scope_version&quot;, &quot;value&quot;: &quot;prd_only&quot;}
+    {&quot;question_id&quot;: &quot;win_condition&quot;, &quot;value&quot;: &quot;no_conflict&quot;},
+    {&quot;question_id&quot;: &quot;board_shape&quot;, &quot;value&quot;: &quot;fixed_grid&quot;}
   ]
 }
 </code></pre>
-<h3 id="prd">生成 PRD</h3>
-<pre><code class="language-text">POST /api/contributions/{job_id}/generate-prd
+<h3 id="post-apicontributionsjob_idgenerate-prd"><code>POST /api/contributions/{job_id}/generate-prd</code></h3>
+<p>根据上传材料、结构化理解和补充答案生成 <code>PRD.md</code> 草稿。</p>
+<h3 id="post-apicontributionsjob_idedit-prd"><code>POST /api/contributions/{job_id}/edit-prd</code></h3>
+<p>保存用户编辑后的 PRD。保存后回到 <code>prd_ready</code>，用户可以再次 Review 并确认进入工作流。</p>
+<pre><code class="language-json">{
+  &quot;content&quot;: &quot;# 游戏接入 PRD\n...&quot;
+}
 </code></pre>
-<h3 id="review">提交维护者 review</h3>
-<pre><code class="language-text">POST /api/contributions/{job_id}/approve-prd
+<h3 id="post-apicontributionsjob_idsubmit-review"><code>POST /api/contributions/{job_id}/submit-review</code></h3>
+<p>用户 Review 确认后进入后续工作流。当前安全策略下，进入工作流后的第一站是 <code>review_pending</code>，等待维护者 review。</p>
+<h3 id="get-apicontributionsjob_idartifactsprdmd"><code>GET /api/contributions/{job_id}/artifacts/PRD.md</code></h3>
+<p>读取生成的 PRD 文档。</p>
+<h3 id="get-apigames"><code>GET /api/games</code></h3>
+<p>返回已支持游戏和 <code>review_pending</code> 接入申请。待评审游戏只显示“待评审”和 GitHub 进展入口，不显示“开始游戏”或“自动求解”。</p>
+<h2 id="_11">存储结构</h2>
+<p>开发环境默认写入：</p>
+<pre><code class="language-text">.chatgame/contributions/&lt;job_id&gt;/
+  input.json
+  job.json
+  model-understanding.json
+  answers.json
+  PRD.md
+  events.jsonl
+  uploads/
+    screenshot.png
 </code></pre>
-<p>该接口不会启动实现，只会把任务置为 <code>review_pending</code>。</p>
-<h3 id="prd_1">查看 PRD</h3>
-<pre><code class="language-text">GET /api/contributions/{job_id}/artifacts/PRD.md
-</code></pre>
-<h2 id="_7">游戏列表展示</h2>
-<p><code>GET /api/games</code> 会返回：</p>
-<ul>
-<li>已支持游戏：<code>status=supported</code>。</li>
-<li>已提交 review 的接入申请：<code>status=pending_review</code>。</li>
-</ul>
-<p>前端列表会将 <code>pending_review</code> 展示为 <code>待评审</code>，禁用“开始游戏/自动求解”，并显示 GitHub 进展入口。</p>
-<h2 id="_8">原型截图</h2>
-<p>开发验证截图保存在 Playground 任务记录中：</p>
-<ul>
-<li>初始向导页：<code>/home/zhihong/.hermes/cache/screenshots/browser_screenshot_72ec932959884c7698e36a170adb7991.png</code></li>
-<li>有限补充页：<code>/home/zhihong/.hermes/cache/screenshots/browser_screenshot_9e87ed14b65442b882b0f6fab0074004.png</code></li>
-<li>PRD 草稿页：<code>/home/zhihong/.hermes/cache/screenshots/browser_screenshot_0ef757222b77498db5152350503b41c2.png</code></li>
-<li>待评审游戏列表：<code>/home/zhihong/.hermes/cache/screenshots/browser_screenshot_20583aa74c3845a5a594575fbb7fe141.png</code></li>
-</ul>
-<p>这些截图用于设计 review，不作为发布包资源。</p>
+<p>接口响应不会暴露服务器上的真实文件路径，只返回文件名、图片尺寸和任务状态。</p>
+<h2 id="_12">后续升级</h2>
+<p>这个版本先停在 PRD review。后续可以在维护者确认后继续增加：</p>
+<ol>
+<li><code>GameSpec.json</code> 生成和 review。</li>
+<li>实现计划生成。</li>
+<li>隔离分支或临时工作区中的代码 patch。</li>
+<li>自动测试和预览。</li>
+<li>由维护者决定是否创建 PR、merge 或发布。</li>
+</ol>
 
 
 
