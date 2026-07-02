@@ -28,7 +28,7 @@ from chatgame.web.paths import has_static_assets, package_static_dir
 logger = logging.getLogger("chatgame.api")
 logger.setLevel(logging.INFO)
 
-app = FastAPI(title="chatgame API", version="0.1.7")
+app = FastAPI(title="chatgame API", version="0.1.9")
 
 app.add_middleware(
     CORSMiddleware,
