@@ -16,13 +16,11 @@ import os
 import re
 import uuid
 import time
-from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import Body, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, PlainTextResponse
-from pydantic import BaseModel
+from fastapi.responses import FileResponse
 from PIL import Image
 
 from chatgame.web.paths import has_static_assets, package_static_dir
@@ -48,9 +46,23 @@ _GAMES = {
         "description": "色块区域约束 · 行列唯一 · 无相邻，N-Queens 变体",
         "supported_sizes": [6, 8, 10],
         "status": "supported",
-        "badge": "已支持",
+        "source": "built_in",
     }
 }
+
+_CONTRIBUTIONS_ROOT = Path(__file__).resolve().parents[2] / ".chatgame" / "contributions"
+_ALLOWED_IMAGE_TYPES = {
+    "image/png": ".png",
+    "image/jpeg": ".jpg",
+    "image/webp": ".webp",
+}
+_ALLOWED_ANSWER_TYPES = {"single_choice", "multi_choice", "yes_no", "short_text", "number"}
+_MAX_QUESTION_COUNT = 6
+_MAX_TEXT_ANSWER_LENGTH = 500
+_DEFAULT_OWNER_REVIEW_MESSAGE = (
+    "需求已提交，当前进入维护者 review 阶段。"
+    "后续由项目维护者审核范围和优先级，再决定是否启动真实开发。"
+)
 
 def _resolve_docs_dir() -> Path:
     # 尝试从安装包内置资源（chatgame/docs/games）获取
@@ -62,6 +74,268 @@ def _resolve_docs_dir() -> Path:
     return dev_dir
 
 _DOCS_DIR = _resolve_docs_dir()
+
+
+def _now_ms() -> int:
+    return int(time.time() * 1000)
+
+
+def _job_dir(job_id: str) -> Path:
+    if not re.fullmatch(r"contrib_[a-z0-9_\-]+", job_id):
+        raise HTTPException(404, "接入申请不存在")
+    return _CONTRIBUTIONS_ROOT / job_id
+
+
+def _slugify(text: str) -> str:
+    slug = re.sub(r"[^a-zA-Z0-9]+", "-", text).strip("-").lower()
+    return slug[:40] or "new-game"
+
+
+def _read_json(path: Path, default=None):
+    if not path.exists():
+        return default
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _write_json(path: Path, data) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _append_event(job_id: str, event: str, payload: dict | None = None) -> None:
+    line = json.dumps(
+        {"ts": _now_ms(), "event": event, "payload": payload or {}},
+        ensure_ascii=False,
+    )
+    events_path = _job_dir(job_id) / "events.jsonl"
+    events_path.parent.mkdir(parents=True, exist_ok=True)
+    with events_path.open("a", encoding="utf-8") as fh:
+        fh.write(line + "\n")
+
+
+def _save_job(job: dict) -> dict:
+    job["updated_at"] = _now_ms()
+    _write_json(_job_dir(job["id"]) / "job.json", job)
+    return job
+
+
+def _load_job(job_id: str) -> dict:
+    job = _read_json(_job_dir(job_id) / "job.json")
+    if not job:
+        raise HTTPException(404, "接入申请不存在")
+    return job
+
+
+def _sanitize_text(value: str, limit: int = 4000) -> str:
+    return (value or "").replace("\x00", "").strip()[:limit]
+
+
+def _question(question_id: str, text: str, options: list[tuple[str, str]]) -> dict:
+    return {
+        "id": question_id,
+        "type": "single_choice",
+        "question": text,
+        "options": [{"value": value, "label": label} for value, label in options[:5]],
+    }
+
+
+def _analyze_contribution(job: dict) -> dict:
+    rules = job.get("rules", "")
+    target_type = job.get("target_type", "playable_solver")
+    text = f"{job.get('name', '')}\n{rules}".lower()
+    understood_rules: list[str] = []
+    questions: list[dict] = []
+    risk_flags: list[str] = []
+
+    if any(word in text for word in ["数独", "sudoku"]):
+        game_type = "logic_puzzle"
+        summary = "这是一个数独类逻辑游戏。"
+        board = {"type": "grid", "rows": 9, "cols": 9}
+        understood_rules.extend([
+            "每行数字不重复",
+            "每列数字不重复",
+            "每个宫格数字不重复",
+        ])
+    elif any(word in text for word in ["棋盘", "网格", "grid", "行", "列"]):
+        game_type = "grid_puzzle"
+        summary = "这是一个网格类谜题，规则需要进一步收敛。"
+        board = {"type": "grid", "rows": None, "cols": None}
+        risk_flags.append("ambiguous_board")
+        questions.append(
+            _question(
+                "board_shape",
+                "第一版棋盘结构如何限定？",
+                [("fixed_grid", "固定行列网格"), ("variable_grid", "不同关卡尺寸可变"), ("unknown", "还需要再补充")],
+            )
+        )
+    else:
+        game_type = "unknown"
+        summary = "系统还不能稳定判断游戏类型，需要补充棋盘结构和胜利条件。"
+        board = {"type": "unknown"}
+        risk_flags.extend(["ambiguous_rules", "missing_win_condition"])
+        questions.append(
+            _question(
+                "game_structure",
+                "这个游戏第一版最接近哪种结构？",
+                [("grid", "网格/棋盘谜题"), ("cards", "卡牌/牌面规则"), ("word", "文字/单词谜题"), ("other", "其他")],
+            )
+        )
+
+    if not any(word in rules for word in ["目标", "胜利", "完成", "通关", "获胜"]):
+        risk_flags.append("missing_win_condition")
+        questions.append(
+            _question(
+                "win_condition",
+                "用户完成游戏的判定方式是什么？",
+                [("fill_all", "填满/完成全部格子"), ("reach_target", "达到指定目标"), ("no_conflict", "满足全部约束且无冲突")],
+            )
+        )
+
+    # 去重并限制问题数量，避免模型式输出膨胀。
+    deduped = []
+    seen = set()
+    for item in questions:
+        if item["id"] not in seen:
+            deduped.append(item)
+            seen.add(item["id"])
+    questions = deduped[:_MAX_QUESTION_COUNT]
+
+    sufficient = game_type != "unknown" and not {"ambiguous_rules", "missing_win_condition"}.intersection(risk_flags)
+    if job.get("answers"):
+        sufficient = game_type != "unknown"
+        risk_flags = [flag for flag in risk_flags if flag not in {"missing_win_condition", "ambiguous_board"}]
+        questions = []
+
+    return {
+        "summary": summary,
+        "confidence": 0.82 if sufficient else 0.58,
+        "sufficient": sufficient,
+        "game_type": game_type,
+        "board": board,
+        "understood_rules": understood_rules or ["需要根据补充说明继续整理规则"],
+        "missing_information": [item["question"] for item in questions],
+        "questions": questions,
+        "risk_flags": risk_flags,
+    }
+
+
+def _validate_answers(job: dict, answers: list[dict]) -> list[dict]:
+    questions = {item["id"]: item for item in job.get("understanding", {}).get("questions", [])}
+    cleaned: list[dict] = []
+    for item in answers[:_MAX_QUESTION_COUNT]:
+        question_id = item.get("question_id")
+        if question_id not in questions:
+            raise HTTPException(400, f"未知问题: {question_id}")
+        question = questions[question_id]
+        if question.get("type") not in _ALLOWED_ANSWER_TYPES:
+            raise HTTPException(400, "不支持的问题类型")
+        value = item.get("value")
+        if isinstance(value, str):
+            value = _sanitize_text(value, _MAX_TEXT_ANSWER_LENGTH)
+        elif isinstance(value, list):
+            value = [_sanitize_text(str(v), 80) for v in value[:5]]
+        else:
+            value = str(value)[:80]
+        option_map = {opt["value"]: opt["label"] for opt in question.get("options", [])}
+        value_label = option_map.get(value, value if isinstance(value, str) else str(value))
+        cleaned.append(
+            {
+                "question_id": question_id,
+                "question": question.get("question", question_id),
+                "value": value,
+                "value_label": value_label,
+            }
+        )
+    return cleaned
+
+
+def _answer_text(job: dict) -> str:
+    labels: list[str] = []
+    questions = {item["id"]: item for item in job.get("understanding", {}).get("questions", [])}
+    for answer in job.get("answers", []):
+        question = questions.get(answer["question_id"], {})
+        option_map = {opt["value"]: opt["label"] for opt in question.get("options", [])}
+        value = answer["value"]
+        value_key = value if isinstance(value, str) else str(value)
+        question_text = answer.get("question") or question.get("question", answer["question_id"])
+        answer_text = answer.get("value_label") or option_map.get(value_key, value_key)
+        labels.append(f"- {question_text}: {answer_text}")
+    return "\n".join(labels) if labels else "- 暂无补充答案"
+
+
+def _generate_prd(job: dict) -> str:
+    understanding = job.get("understanding", {})
+    target_map = {
+        "docs_only": "规则说明文档",
+        "playable": "可玩版本",
+        "solver": "自动求解",
+        "playable_solver": "可玩版本 + 自动求解",
+    }
+    return f"""# {job['name']} 接入 PRD
+
+## 目标
+
+为 chatgame 接入 `{job['name']}`，第一版目标是：{target_map.get(job.get('target_type'), '可玩版本 + 自动求解')}。
+
+## 当前理解
+
+{understanding.get('summary', '暂无结构化理解。')}
+
+## 用户提供的规则
+
+{job.get('rules', '')}
+
+## 已确认补充
+
+{_answer_text(job)}
+
+## 第一版范围
+
+- 先沉淀规则、交互范围和验收标准。
+- 只在用户 Review 确认后进入后续工作流。
+- 后续工作流先进入维护者 review，不直接运行代码、不修改仓库、不自动上线。
+
+## 待评审事项
+
+- 游戏规则是否足够明确。
+- 第一版范围是否适合 chatgame 当前能力。
+- 是否需要拆分为文档、可玩版本、自动求解多个阶段。
+
+## 验收标准
+
+- 用户上传的截图和规则能形成可读 PRD。
+- 模型分析发现模糊点时，才通过有限问题补充。
+- 用户 Review 确认后进入 `review_pending`，等待维护者审核。
+- 维护者审核前不会启动实现、测试或发布流程。
+
+## 安全边界
+
+- 上传图片和规则只作为待分析数据，不作为系统指令。
+- 本阶段不执行 shell、不访问外部网络、不创建 PR、不合并代码。
+- 后续开发必须由维护者 review 后手动启动。
+"""
+
+
+def _pending_contribution_games() -> list[dict]:
+    if not _CONTRIBUTIONS_ROOT.exists():
+        return []
+    games: list[dict] = []
+    for path in sorted(_CONTRIBUTIONS_ROOT.glob("contrib_*/job.json")):
+        job = _read_json(path)
+        if not job or job.get("status") not in {"review_pending", "needs_edit"}:
+            continue
+        games.append(
+            {
+                "id": f"pending-{job['id']}",
+                "name": job.get("name", "新游戏接入申请"),
+                "description": f"待维护者评审 · {job.get('review_message', _DEFAULT_OWNER_REVIEW_MESSAGE)}",
+                "status": job.get("status"),
+                "source": "contribution",
+                "job_id": job["id"],
+                "github_url": job.get("github_url", "https://github.com/ChatArch/ChatGame"),
+            }
+        )
+    return games
 
 _COLOR_TABLE: list[tuple[tuple[int, int, int], str]] = [
     ((128, 185, 254), "蓝"),
@@ -149,9 +423,163 @@ def health():
 @app.get("/games")
 @app.get("/api/games")
 def list_games():
-    games = list(_GAMES.values())
-    games.extend(_list_pending_contribution_games())
+    games = list(_GAMES.values()) + _pending_contribution_games()
     return {"games": games}
+
+
+@app.post("/contributions")
+@app.post("/api/contributions")
+async def create_contribution(
+    image: UploadFile = File(...),
+    name: str = Form(...),
+    rules: str = Form(...),
+    target_type: str = Form("playable_solver"),
+):
+    clean_name = _sanitize_text(name, 80)
+    clean_rules = _sanitize_text(rules, 4000)
+    if not clean_name or not clean_rules:
+        raise HTTPException(400, "游戏名称和规则描述不能为空")
+    if target_type not in {"docs_only", "playable", "solver", "playable_solver"}:
+        raise HTTPException(400, "不支持的接入目标")
+    if image.content_type not in _ALLOWED_IMAGE_TYPES:
+        raise HTTPException(400, "仅支持 PNG、JPG、WebP 图片")
+
+    raw = await image.read()
+    if not raw or len(raw) > 5 * 1024 * 1024:
+        raise HTTPException(400, "图片不能为空，且不能超过 5MB")
+    try:
+        with Image.open(io.BytesIO(raw)) as img:
+            cleaned = img.convert("RGB")
+            image_width, image_height = cleaned.size
+            if image_width < 20 or image_height < 20:
+                raise ValueError("图片尺寸过小")
+    except Exception as exc:
+        raise HTTPException(400, f"无法读取图片: {exc}") from exc
+
+    job_id = f"contrib_{int(time.time())}_{_slugify(clean_name)}_{uuid.uuid4().hex[:6]}"
+    job_path = _job_dir(job_id)
+    upload_dir = job_path / "uploads"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    image_path = upload_dir / "screenshot.png"
+    cleaned.save(image_path, format="PNG")
+
+    job = {
+        "id": job_id,
+        "game_id": _slugify(clean_name),
+        "name": clean_name,
+        "rules": clean_rules,
+        "target_type": target_type,
+        "status": "analyzing",
+        "created_at": _now_ms(),
+        "updated_at": _now_ms(),
+        "image": {
+            "filename": image.filename or "screenshot.png",
+            "content_type": image.content_type,
+            "width": image_width,
+            "height": image_height,
+        },
+        "answers": [],
+        "github_url": "https://github.com/ChatArch/ChatGame",
+    }
+    job["understanding"] = _analyze_contribution(job)
+    job["status"] = "understanding_ready" if job["understanding"]["sufficient"] else "needs_clarification"
+    _save_job(job)
+    _write_json(job_path / "input.json", {"name": clean_name, "rules": clean_rules, "target_type": target_type})
+    _write_json(job_path / "model-understanding.json", job["understanding"])
+    _append_event(job_id, "created", {"status": job["status"]})
+    return job
+
+
+@app.get("/contributions/{job_id}")
+@app.get("/api/contributions/{job_id}")
+def get_contribution(job_id: str):
+    return _load_job(job_id)
+
+
+@app.post("/contributions/{job_id}/answers")
+@app.post("/api/contributions/{job_id}/answers")
+def answer_contribution_questions(job_id: str, payload: dict = Body(...)):
+    job = _load_job(job_id)
+    answers = payload.get("answers")
+    if not isinstance(answers, list):
+        raise HTTPException(400, "answers 必须是数组")
+    job["answers"] = _validate_answers(job, answers)
+    job["understanding"] = _analyze_contribution(job)
+    job["status"] = "understanding_ready" if job["understanding"]["sufficient"] else "needs_clarification"
+    _write_json(_job_dir(job_id) / "answers.json", job["answers"])
+    _write_json(_job_dir(job_id) / "model-understanding.json", job["understanding"])
+    _save_job(job)
+    _append_event(job_id, "answers_submitted", {"status": job["status"]})
+    return job
+
+
+@app.post("/contributions/{job_id}/reanalyze")
+@app.post("/api/contributions/{job_id}/reanalyze")
+def reanalyze_contribution(job_id: str):
+    job = _load_job(job_id)
+    job["understanding"] = _analyze_contribution(job)
+    job["status"] = "understanding_ready" if job["understanding"]["sufficient"] else "needs_clarification"
+    _write_json(_job_dir(job_id) / "model-understanding.json", job["understanding"])
+    _save_job(job)
+    _append_event(job_id, "reanalyzed", {"status": job["status"]})
+    return job
+
+
+@app.post("/contributions/{job_id}/generate-prd")
+@app.post("/api/contributions/{job_id}/generate-prd")
+def generate_contribution_prd(job_id: str):
+    job = _load_job(job_id)
+    if job.get("status") not in {"understanding_ready", "prd_ready", "needs_edit"}:
+        raise HTTPException(400, "请先完成模型分析并处理模糊点")
+    prd = _generate_prd(job)
+    job["prd"] = prd
+    job["status"] = "prd_ready"
+    (_job_dir(job_id) / "PRD.md").write_text(prd, encoding="utf-8")
+    _save_job(job)
+    _append_event(job_id, "prd_generated", {"status": job["status"]})
+    return job
+
+
+@app.post("/contributions/{job_id}/edit-prd")
+@app.post("/api/contributions/{job_id}/edit-prd")
+def edit_contribution_prd(job_id: str, payload: dict = Body(...)):
+    job = _load_job(job_id)
+    if job.get("status") not in {"prd_ready", "review_pending", "needs_edit"}:
+        raise HTTPException(400, "当前状态不能编辑 PRD")
+    content = _sanitize_text(payload.get("content", ""), 12000)
+    if not content:
+        raise HTTPException(400, "PRD 内容不能为空")
+    job["prd"] = content
+    job["status"] = "prd_ready"
+    (_job_dir(job_id) / "PRD.md").write_text(content, encoding="utf-8")
+    _save_job(job)
+    _append_event(job_id, "prd_edited", {"status": job["status"]})
+    return job
+
+
+@app.post("/contributions/{job_id}/submit-review")
+@app.post("/api/contributions/{job_id}/submit-review")
+def submit_contribution_review(job_id: str):
+    job = _load_job(job_id)
+    if job.get("status") != "prd_ready" or not job.get("prd"):
+        raise HTTPException(400, "请先生成并确认 PRD")
+    job["status"] = "review_pending"
+    job["review_message"] = _DEFAULT_OWNER_REVIEW_MESSAGE
+    _save_job(job)
+    _append_event(job_id, "review_submitted", {"status": job["status"]})
+    return {
+        **job,
+        "user_message": "已确认进入后续工作流。当前会先进入维护者 review，审核需求范围后再决定是否启动真实开发；你也可以在 GitHub 查看项目进展。",
+    }
+
+
+@app.get("/contributions/{job_id}/artifacts/PRD.md")
+@app.get("/api/contributions/{job_id}/artifacts/PRD.md")
+def contribution_prd(job_id: str):
+    path = _job_dir(job_id) / "PRD.md"
+    if not path.exists():
+        raise HTTPException(404, "PRD 尚未生成")
+    return {"content": path.read_text(encoding="utf-8")}
 
 
 @app.get("/games/{game_id}/docs")
@@ -163,418 +591,6 @@ def game_docs(game_id: str):
     rules = (doc_dir / "rules.md").read_text(encoding="utf-8") if (doc_dir / "rules.md").exists() else ""
     strategy = (doc_dir / "strategy.md").read_text(encoding="utf-8") if (doc_dir / "strategy.md").exists() else ""
     return {"rules": rules, "strategy": strategy}
-
-
-# ── 受限交互式游戏接入向导原型 ────────────────────────────────────────────────
-
-_ALLOWED_TARGETS = {
-    "rules_only": "只生成规则说明",
-    "playable": "做可玩版本",
-    "solver": "做自动求解",
-    "play_and_solve": "可玩 + 自动求解",
-}
-_ALLOWED_IMAGE_TYPES = {"image/png", "image/jpeg", "image/webp"}
-_MAX_UPLOAD_BYTES = 5 * 1024 * 1024
-_GITHUB_PROGRESS_URL = "https://github.com/ChatArch/ChatGame"
-_REVIEW_STATUSES = {"review_pending", "prd_approved"}
-
-
-class ContributionAnswer(BaseModel):
-    question_id: str
-    value: str | list[str]
-
-
-class ContributionAnswersPayload(BaseModel):
-    answers: list[ContributionAnswer]
-
-
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-
-def _contributions_root() -> Path:
-    env_dir = os.getenv("CHATGAME_CONTRIBUTIONS_DIR")
-    if env_dir:
-        return Path(env_dir).expanduser().resolve()
-    return (Path.cwd() / ".chatgame" / "contributions").resolve()
-
-
-def _list_pending_contribution_games() -> list[dict]:
-    root = _contributions_root()
-    if not root.exists():
-        return []
-
-    games: list[dict] = []
-    for state_path in sorted(root.glob("contrib_*/state.json")):
-        try:
-            job = json.loads(state_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            continue
-        if job.get("status") not in _REVIEW_STATUSES:
-            continue
-        source = job.get("input", {})
-        name = source.get("name") or "待评审游戏"
-        target = source.get("target", "play_and_solve")
-        games.append({
-            "id": job.get("job_id", state_path.parent.name),
-            "name": name,
-            "description": f"接入申请已提交，等待维护者 review · {_ALLOWED_TARGETS.get(target, '待评审')}",
-            "status": "pending_review",
-            "badge": "待评审",
-            "progress_url": _GITHUB_PROGRESS_URL,
-        })
-    return games
-
-
-def _job_dir(job_id: str) -> Path:
-    if not re.fullmatch(r"contrib_[0-9a-zA-Z_\-]+", job_id):
-        raise HTTPException(404, "接入任务不存在")
-    return _contributions_root() / job_id
-
-
-def _read_json(path: Path, default=None):
-    if not path.exists():
-        return default
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _write_json(path: Path, data) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-
-
-def _append_event(job_dir: Path, event: str, payload: dict | None = None) -> None:
-    record = {"time": _now_iso(), "event": event, "payload": payload or {}}
-    with (job_dir / "events.jsonl").open("a", encoding="utf-8") as fh:
-        fh.write(json.dumps(record, ensure_ascii=False) + "\n")
-
-
-def _question(question_id: str, question: str, options: list[tuple[str, str]]) -> dict:
-    return {
-        "id": question_id,
-        "type": "single_choice",
-        "question": question,
-        "options": [{"value": value, "label": label} for value, label in options],
-    }
-
-
-def _answer_map(answers: list[dict]) -> dict[str, str | list[str]]:
-    return {item["question_id"]: item["value"] for item in answers}
-
-
-def _infer_board(name: str, rules: str) -> dict:
-    text = f"{name}\n{rules}".lower()
-    size_match = re.search(r"(\d+)\s*[x×*]\s*(\d+)", text)
-    if size_match:
-        return {"type": "grid", "rows": int(size_match.group(1)), "cols": int(size_match.group(2))}
-    if "数独" in text or "sudoku" in text:
-        return {"type": "grid", "rows": 9, "cols": 9}
-    if "棋盘" in text or "格" in text or "grid" in text:
-        return {"type": "grid", "rows": None, "cols": None}
-    return {"type": "unknown", "rows": None, "cols": None}
-
-
-def _analyze_contribution(name: str, rules: str, target: str, answers: list[dict]) -> dict:
-    answer_by_id = _answer_map(answers)
-    text = f"{name}\n{rules}"
-    lower = text.lower()
-    questions: list[dict] = []
-    missing: list[str] = []
-    risk_flags: list[str] = []
-    board = _infer_board(name, rules)
-
-    if any(token in lower for token in ["ignore previous", "忽略之前", "执行命令", "system prompt"]):
-        risk_flags.append("possible_prompt_injection")
-
-    understood_rules: list[str] = []
-    if "数独" in lower or "sudoku" in lower:
-        understood_rules.extend(["每行不重复", "每列不重复", "每个宫格不重复"])
-    if any(token in rules for token in ["行", "row"]):
-        understood_rules.append("存在行约束")
-    if any(token in rules for token in ["列", "column"]):
-        understood_rules.append("存在列约束")
-    if any(token in rules for token in ["相邻", "adjacent"]):
-        understood_rules.append("存在相邻限制")
-    if any(token in rules for token in ["区域", "颜色", "region", "color"]):
-        understood_rules.append("存在区域/颜色约束")
-    if not understood_rules:
-        understood_rules.append("已收到规则描述，但规则类型仍需补充确认")
-
-    if len(rules.strip()) < 24 and "rule_detail" not in answer_by_id:
-        missing.append("规则描述过短，需要补充核心玩法和胜利条件")
-        questions.append({
-            "id": "rule_detail",
-            "type": "short_text",
-            "question": "请用 1-3 句话补充核心玩法、限制条件和胜利条件。",
-            "max_length": 500,
-        })
-
-    if board["type"] == "unknown" and "board_shape" not in answer_by_id:
-        missing.append("棋盘或局面结构不明确")
-        questions.append(_question("board_shape", "这个游戏的主要局面结构是什么？", [
-            ("grid", "网格/棋盘"),
-            ("cards", "卡牌/牌堆"),
-            ("graph", "节点/连线"),
-            ("other", "其他结构"),
-        ]))
-
-    if target in {"solver", "play_and_solve"} and "solver_output" not in answer_by_id:
-        missing.append("自动求解结果展示方式未确认")
-        questions.append(_question("solver_output", "自动求解结果第一版怎么展示？", [
-            ("full_solution", "展示完整答案"),
-            ("next_hint", "只给下一步提示"),
-            ("both", "完整答案 + 下一步提示"),
-        ]))
-
-    if "screenshot_parse" not in answer_by_id:
-        missing.append("截图识别是否进入第一版范围未确认")
-        questions.append(_question("screenshot_parse", "第一版是否需要支持截图识别？", [
-            ("v1", "第一版支持"),
-            ("later", "第二版再做"),
-            ("no", "不需要"),
-        ]))
-
-    if "scope_version" not in answer_by_id:
-        missing.append("第一版范围需要确认")
-        questions.append(_question("scope_version", "第一版接入范围建议定到哪里？", [
-            ("prd_only", "只生成 PRD 草稿"),
-            ("spec_next", "PRD 后再生成 GameSpec"),
-            ("manual_review", "PRD 确认后人工评审再实现"),
-        ]))
-
-    sufficient = not questions and not risk_flags
-    confidence = 0.35
-    confidence += 0.2 if len(rules.strip()) >= 24 else 0
-    confidence += 0.15 if board["type"] != "unknown" else 0
-    confidence += min(len(answer_by_id) * 0.08, 0.24)
-    confidence -= 0.18 if risk_flags else 0
-    confidence = max(0.1, min(round(confidence, 2), 0.95))
-
-    return {
-        "summary": f"这是一个{_ALLOWED_TARGETS.get(target, '游戏接入')}任务，当前已识别出 {board['type']} 类型局面。",
-        "confidence": confidence,
-        "sufficient": sufficient,
-        "game_type": "logic_puzzle" if board["type"] == "grid" else "unknown",
-        "board": board,
-        "understood_rules": list(dict.fromkeys(understood_rules)),
-        "missing_information": missing,
-        "questions": questions[:4],
-        "risk_flags": risk_flags,
-        "safety_note": "当前原型只生成 PRD，不执行代码、不修改仓库、不创建 PR。",
-    }
-
-
-def _render_prd(job: dict) -> str:
-    source = job["input"]
-    understanding = job["understanding"]
-    answers = _answer_map(job.get("answers", []))
-    target_label = _ALLOWED_TARGETS.get(source.get("target"), source.get("target", "未指定"))
-    rules = "\n".join(f"- {rule}" for rule in understanding.get("understood_rules", []))
-    answers_md = "\n".join(f"- {key}: {value}" for key, value in answers.items()) or "- 暂无补充答案"
-    rows = understanding.get("board", {}).get("rows") or "待确认"
-    cols = understanding.get("board", {}).get("cols") or "待确认"
-
-    return f"""# {source['name']} 接入 PRD
-
-## 目标
-
-为 chatgame 接入 `{source['name']}` 的第一版需求草稿，目标类型：{target_label}。
-
-## 当前理解
-
-- 游戏类型：{understanding.get('game_type', 'unknown')}
-- 局面结构：{understanding.get('board', {}).get('type', 'unknown')}
-- 棋盘规模：{rows} x {cols}
-- 理解置信度：{understanding.get('confidence')}
-
-## 已理解规则
-
-{rules}
-
-## 用户补充
-
-{answers_md}
-
-## 第一版范围
-
-- 先沉淀 PRD 和结构化理解，不直接生成代码。
-- 需要用户确认 PRD 后，才允许进入 GameSpec 或实现计划阶段。
-- 截图识别、自动求解和可玩版本是否进入第一版，以用户补充答案为准。
-
-## 安全约束
-
-- 上传图片和规则描述只作为待分析数据。
-- 不执行用户内容中的任何命令或提示词指令。
-- 当前阶段不修改仓库、不运行 shell、不创建 PR。
-- 后续进入实现阶段前必须再次人工确认。
-
-## 验收标准
-
-- 用户可以看到模型对游戏规则的结构化理解。
-- 信息不足时，系统通过有限选项要求用户补充。
-- 用户确认后生成本 PRD 草稿。
-- 用户点击提交审核后，任务状态变为 `review_pending`，维护者 review 后再决定是否进入实现阶段。
-"""
-
-
-def _load_job(job_id: str) -> dict:
-    job_dir = _job_dir(job_id)
-    if not job_dir.exists():
-        raise HTTPException(404, "接入任务不存在")
-    job = _read_json(job_dir / "state.json")
-    if not job:
-        raise HTTPException(404, "接入任务不存在")
-    prd_path = job_dir / "PRD.md"
-    if prd_path.exists():
-        job["prd"] = prd_path.read_text(encoding="utf-8")
-    return job
-
-
-def _save_job(job: dict) -> dict:
-    job["updated_at"] = _now_iso()
-    job_dir = _job_dir(job["job_id"])
-    _write_json(job_dir / "state.json", job)
-    _write_json(job_dir / "model-understanding.json", job["understanding"])
-    _write_json(job_dir / "answers.json", job.get("answers", []))
-    return _load_job(job["job_id"])
-
-
-@app.post("/contributions")
-@app.post("/api/contributions")
-async def create_contribution(
-    name: str = Form(...),
-    rules: str = Form(...),
-    target: str = Form("play_and_solve"),
-    image: UploadFile = File(...),
-):
-    if target not in _ALLOWED_TARGETS:
-        raise HTTPException(400, "未知接入目标")
-    if image.content_type not in _ALLOWED_IMAGE_TYPES:
-        raise HTTPException(400, "只支持 PNG / JPG / WebP 图片")
-
-    raw = image.file.read(_MAX_UPLOAD_BYTES + 1)
-    if len(raw) > _MAX_UPLOAD_BYTES:
-        raise HTTPException(400, "图片不能超过 5MB")
-    try:
-        with Image.open(io.BytesIO(raw)) as img:
-            image_size = img.size
-    except Exception as exc:
-        raise HTTPException(400, f"无法读取图片: {exc}") from exc
-
-    job_id = f"contrib_{time.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}"
-    job_dir = _job_dir(job_id)
-    uploads_dir = job_dir / "uploads"
-    uploads_dir.mkdir(parents=True, exist_ok=True)
-    suffix = Path(image.filename or "screenshot.png").suffix.lower() or ".png"
-    if suffix not in {".png", ".jpg", ".jpeg", ".webp"}:
-        suffix = ".png"
-    image_path = uploads_dir / f"screenshot{suffix}"
-    image_path.write_bytes(raw)
-
-    input_data = {
-        "name": name.strip(),
-        "rules": rules.strip(),
-        "target": target,
-        "image": {"path": str(image_path), "filename": image.filename, "size": image_size},
-    }
-    understanding = _analyze_contribution(input_data["name"], input_data["rules"], target, [])
-    status = "understanding_ready" if understanding["sufficient"] else "needs_clarification"
-    job = {
-        "job_id": job_id,
-        "status": status,
-        "created_at": _now_iso(),
-        "updated_at": _now_iso(),
-        "input": input_data,
-        "understanding": understanding,
-        "answers": [],
-    }
-    _write_json(job_dir / "input.json", input_data)
-    _write_json(job_dir / "state.json", job)
-    _write_json(job_dir / "model-understanding.json", understanding)
-    _write_json(job_dir / "answers.json", [])
-    _append_event(job_dir, "created", {"status": status})
-    return _load_job(job_id)
-
-
-@app.get("/contributions/{job_id}")
-@app.get("/api/contributions/{job_id}")
-def get_contribution(job_id: str):
-    return _load_job(job_id)
-
-
-@app.post("/contributions/{job_id}/answers")
-@app.post("/api/contributions/{job_id}/answers")
-def answer_contribution_questions(job_id: str, payload: ContributionAnswersPayload):
-    job = _load_job(job_id)
-    merged = _answer_map(job.get("answers", []))
-    for answer in payload.answers:
-        merged[answer.question_id] = answer.value
-    job["answers"] = [
-        {"question_id": question_id, "value": value}
-        for question_id, value in sorted(merged.items())
-    ]
-    job["understanding"] = _analyze_contribution(
-        job["input"]["name"],
-        job["input"]["rules"],
-        job["input"]["target"],
-        job["answers"],
-    )
-    job["status"] = "understanding_ready" if job["understanding"]["sufficient"] else "needs_clarification"
-    _append_event(_job_dir(job_id), "answers_submitted", {"status": job["status"]})
-    return _save_job(job)
-
-
-@app.post("/contributions/{job_id}/reanalyze")
-@app.post("/api/contributions/{job_id}/reanalyze")
-def reanalyze_contribution(job_id: str):
-    job = _load_job(job_id)
-    job["understanding"] = _analyze_contribution(
-        job["input"]["name"],
-        job["input"]["rules"],
-        job["input"]["target"],
-        job.get("answers", []),
-    )
-    job["status"] = "understanding_ready" if job["understanding"]["sufficient"] else "needs_clarification"
-    _append_event(_job_dir(job_id), "reanalyzed", {"status": job["status"]})
-    return _save_job(job)
-
-
-@app.post("/contributions/{job_id}/generate-prd")
-@app.post("/api/contributions/{job_id}/generate-prd")
-def generate_contribution_prd(job_id: str):
-    job = _load_job(job_id)
-    if job["status"] not in {"understanding_ready", "prd_ready"}:
-        raise HTTPException(409, "请先补充并确认模型理解，再生成 PRD")
-    prd = _render_prd(job)
-    (_job_dir(job_id) / "PRD.md").write_text(prd, encoding="utf-8")
-    job["status"] = "prd_ready"
-    _append_event(_job_dir(job_id), "prd_generated", {})
-    return _save_job(job)
-
-
-@app.post("/contributions/{job_id}/approve-prd")
-@app.post("/api/contributions/{job_id}/approve-prd")
-def approve_contribution_prd(job_id: str):
-    job = _load_job(job_id)
-    if not (_job_dir(job_id) / "PRD.md").exists():
-        raise HTTPException(409, "请先生成 PRD")
-    job["status"] = "review_pending"
-    job["review"] = {
-        "status": "pending",
-        "message": "接入申请已提交，维护者 review 后会决定是否进入实现阶段。",
-        "progress_url": _GITHUB_PROGRESS_URL,
-    }
-    _append_event(_job_dir(job_id), "submitted_for_review", job["review"])
-    return _save_job(job)
-
-
-@app.get("/contributions/{job_id}/artifacts/PRD.md")
-@app.get("/api/contributions/{job_id}/artifacts/PRD.md")
-def get_contribution_prd(job_id: str):
-    prd_path = _job_dir(job_id) / "PRD.md"
-    if not prd_path.exists():
-        raise HTTPException(404, "PRD 尚未生成")
-    return PlainTextResponse(prd_path.read_text(encoding="utf-8"))
 
 
 @app.post("/solve")

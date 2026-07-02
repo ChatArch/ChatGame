@@ -34,6 +34,9 @@ chatgame solve level24.png -o solved.png
 | 查看支持的游戏 | `chatgame games` |
 | 检查 Web 运行环境 | `chatgame web setup` |
 | 启动 Web UI | `chatgame web serve` |
+| 受限接入新游戏 PRD 向导 | `/contribute` |
+
+→ 接入流程见 [Contribute 接入向导](contribute-wizard.md)
 
 ---
 

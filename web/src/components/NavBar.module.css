@@ -10,15 +10,30 @@
   top: 0;
   z-index: 100;
 }
-.logo { font-weight: 700; font-size: 17px; color: var(--text); }
-.links { display: flex; gap: 4px; margin-left: auto; }
+.logo { font-weight: 700; font-size: 17px; color: var(--text); flex-shrink: 0; }
+.links { display: flex; gap: 4px; margin-left: auto; min-width: 0; }
 .links a {
   padding: 6px 14px;
   border-radius: 20px;
   color: var(--muted);
   font-size: 14px;
   font-weight: 500;
+  white-space: nowrap;
   transition: background .12s, color .12s;
 }
 .links a:hover { background: var(--bg); color: var(--text); text-decoration: none; }
 .links a.active { background: var(--accent); color: #fff; }
+
+@media (max-width: 560px) {
+  .nav {
+    gap: 8px;
+    padding: 0 12px;
+  }
+
+  .logo { font-size: 15px; }
+  .links { gap: 2px; }
+  .links a {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+}

@@ -77,66 +77,6 @@ def test_api_reads_game_docs_from_packaged_directory(tmp_path, monkeypatch):
     }
 
 
-def test_contribution_wizard_generates_and_approves_prd(tmp_path, monkeypatch):
-    monkeypatch.setenv("CHATGAME_CONTRIBUTIONS_DIR", str(tmp_path / "contributions"))
-    api = _load_api(monkeypatch, disable_ui=True)
-    client = TestClient(api.app)
-    image_buf = io.BytesIO()
-    Image.new("RGB", (8, 8), (255, 255, 255)).save(image_buf, format="PNG")
-
-    response = client.post(
-        "/api/contributions",
-        data={
-            "name": "数独",
-            "target": "play_and_solve",
-            "rules": "9x9 数独，每行每列和每个 3x3 宫都不能重复，填满后过关。",
-        },
-        files={"image": ("sudoku.png", image_buf.getvalue(), "image/png")},
-    )
-
-    assert response.status_code == 200
-    job = response.json()
-    assert job["status"] == "needs_clarification"
-    question_ids = {question["id"] for question in job["understanding"]["questions"]}
-    assert {"solver_output", "screenshot_parse", "scope_version"}.issubset(question_ids)
-
-    response = client.post(
-        f"/api/contributions/{job['job_id']}/answers",
-        json={
-            "answers": [
-                {"question_id": "solver_output", "value": "full_solution"},
-                {"question_id": "screenshot_parse", "value": "later"},
-                {"question_id": "scope_version", "value": "prd_only"},
-            ]
-        },
-    )
-
-    assert response.status_code == 200
-    job = response.json()
-    assert job["status"] == "understanding_ready"
-    assert job["understanding"]["sufficient"] is True
-
-    response = client.post(f"/api/contributions/{job['job_id']}/generate-prd")
-    assert response.status_code == 200
-    job = response.json()
-    assert job["status"] == "prd_ready"
-    assert "# 数独 接入 PRD" in job["prd"]
-
-    response = client.post(f"/api/contributions/{job['job_id']}/approve-prd")
-    assert response.status_code == 200
-    job = response.json()
-    assert job["status"] == "review_pending"
-    assert "维护者 review" in job["review"]["message"]
-
-    games = client.get("/api/games").json()["games"]
-    pending = [game for game in games if game.get("status") == "pending_review"]
-    assert pending[0]["name"] == "数独"
-    assert pending[0]["badge"] == "待评审"
-
-    artifact = client.get(f"/api/contributions/{job['job_id']}/artifacts/PRD.md")
-    assert artifact.status_code == 200
-    assert "安全约束" in artifact.text
-
 
 def test_api_returns_404_when_web_ui_disabled(monkeypatch):
     api = _load_api(monkeypatch, disable_ui=True)
@@ -145,6 +85,118 @@ def test_api_returns_404_when_web_ui_disabled(monkeypatch):
     response = client.get("/")
 
     assert response.status_code == 404
+
+
+def test_contribution_prd_review_flow(tmp_path, monkeypatch):
+    api = _load_api(monkeypatch, disable_ui=True)
+    monkeypatch.setattr(api, "_CONTRIBUTIONS_ROOT", tmp_path / "contributions")
+    client = TestClient(api.app)
+    image_buf = io.BytesIO()
+    Image.new("RGB", (40, 40), (255, 255, 255)).save(image_buf, format="PNG")
+
+    created = client.post(
+        "/api/contributions",
+        data={
+            "name": "数独",
+            "rules": "9x9 棋盘，目标是填满数字，每行每列每宫不重复。",
+            "target_type": "playable_solver",
+        },
+        files={"image": ("sudoku.png", image_buf.getvalue(), "image/png")},
+    )
+
+    assert created.status_code == 200
+    job = created.json()
+    assert job["status"] == "understanding_ready"
+    assert job["understanding"]["game_type"] == "logic_puzzle"
+    assert "uploads" not in str(job.get("image", {}))
+
+    answers = [
+        {
+            "question_id": question["id"],
+            "value": question["options"][0]["value"],
+        }
+        for question in job["understanding"]["questions"]
+    ]
+    answered = client.post(f"/api/contributions/{job['id']}/answers", json={"answers": answers})
+    assert answered.status_code == 200
+    assert answered.json()["status"] == "understanding_ready"
+
+    prd = client.post(f"/api/contributions/{job['id']}/generate-prd")
+    assert prd.status_code == 200
+    assert prd.json()["status"] == "prd_ready"
+    assert "维护者 review" in prd.json()["prd"]
+
+    edited = client.post(
+        f"/api/contributions/{job['id']}/edit-prd",
+        json={"content": prd.json()["prd"] + "\n## 用户补充\n需要先 review。\n"},
+    )
+    assert edited.status_code == 200
+    assert edited.json()["status"] == "prd_ready"
+
+    submitted = client.post(f"/api/contributions/{job['id']}/submit-review")
+    assert submitted.status_code == 200
+    assert submitted.json()["status"] == "review_pending"
+    assert "GitHub" in submitted.json()["user_message"]
+
+    games = client.get("/api/games").json()["games"]
+    pending = [game for game in games if game.get("job_id") == job["id"]]
+    assert pending
+    assert pending[0]["status"] == "review_pending"
+    assert pending[0]["github_url"].startswith("https://github.com/")
+
+
+def test_contribution_preserves_clarification_labels_in_prd(tmp_path, monkeypatch):
+    api = _load_api(monkeypatch, disable_ui=True)
+    monkeypatch.setattr(api, "_CONTRIBUTIONS_ROOT", tmp_path / "contributions")
+    client = TestClient(api.app)
+    image_buf = io.BytesIO()
+    Image.new("RGB", (40, 40), (255, 255, 255)).save(image_buf, format="PNG")
+
+    created = client.post(
+        "/api/contributions",
+        data={
+            "name": "网格谜题",
+            "rules": "棋盘上需要根据区域限制摆放棋子。",
+            "target_type": "playable",
+        },
+        files={"image": ("grid.png", image_buf.getvalue(), "image/png")},
+    )
+
+    assert created.status_code == 200
+    job = created.json()
+    assert job["status"] == "needs_clarification"
+
+    answers = [
+        {
+            "question_id": question["id"],
+            "value": question["options"][0]["value"],
+        }
+        for question in job["understanding"]["questions"]
+    ]
+    answered = client.post(f"/api/contributions/{job['id']}/answers", json={"answers": answers})
+    assert answered.status_code == 200
+
+    prd = client.post(f"/api/contributions/{job['id']}/generate-prd")
+
+    assert prd.status_code == 200
+    prd_text = prd.json()["prd"]
+    assert "第一版棋盘结构如何限定" in prd_text
+    assert "固定行列网格" in prd_text
+
+
+def test_contribution_rejects_non_image_upload(tmp_path, monkeypatch):
+    api = _load_api(monkeypatch, disable_ui=True)
+    monkeypatch.setattr(api, "_CONTRIBUTIONS_ROOT", tmp_path / "contributions")
+    client = TestClient(api.app)
+
+    response = client.post(
+        "/api/contributions",
+        data={"name": "测试", "rules": "规则", "target_type": "docs_only"},
+        files={"image": ("notes.txt", b"not an image", "text/plain")},
+    )
+
+    assert response.status_code == 400
+    assert "PNG" in response.json()["detail"]
 
 
 def test_solve_returns_warning_for_non_unique_solution(monkeypatch, mocker):

@@ -14,7 +14,7 @@
   gap: 8px;
 }
 .cardPlaceholder { opacity: .5; }
-.cardPending { border-style: dashed; background: linear-gradient(180deg, #fff, #f8fbff); }
+.cardPending { border-color: #e6c76e; background: #fffdf5; }
 .cardTop { display: flex; justify-content: flex-end; }
 .badge {
   font-size: 11px;
@@ -24,11 +24,11 @@
   padding: 2px 8px;
   border-radius: 20px;
 }
-.badgePending { background: #fff4dc; color: #a46400; }
+.badgePending { background: #fff0c2; color: #7b5e22; }
 .cardTitle { font-size: 16px; font-weight: 700; }
 .cardDesc { font-size: 13px; color: var(--muted); flex: 1; }
 .cardActions { display: flex; gap: 8px; margin-top: 4px; }
-.linkBtn, .disabledBtn {
+.linkBtn {
   flex: 1;
   text-align: center;
   padding: 7px 0;
@@ -39,5 +39,15 @@
   color: var(--accent);
   transition: background .12s;
 }
+.disabledBtn {
+  flex: 1;
+  text-align: center;
+  padding: 7px 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  color: #9b8b6b;
+  background: #faf3df;
+}
 .linkBtn:hover { background: var(--bg); text-decoration: none; }
-.disabledBtn { color: #9aaabd; background: #f3f7fb; cursor: not-allowed; }

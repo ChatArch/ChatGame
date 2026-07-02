@@ -1,315 +1,358 @@
 import { useMemo, useState } from 'react'
-import styles from './Contribute.module.css'
 import { fetchJson } from '../lib/api'
+import styles from './Contribute.module.css'
+
+const TARGET_TYPES = [
+  { value: 'docs_only', label: '只整理规则文档' },
+  { value: 'playable', label: '做可玩版本' },
+  { value: 'solver', label: '做自动求解' },
+  { value: 'playable_solver', label: '可玩 + 自动求解' },
+]
 
 const STEPS = [
   { key: 'upload', label: '上传资料' },
-  { key: 'understand', label: '模型理解' },
-  { key: 'clarify', label: '补充确认' },
-  { key: 'prd', label: 'PRD 草稿' },
+  { key: 'analyze', label: '模型分析' },
+  { key: 'user-review', label: '用户 Review' },
+  { key: 'workflow', label: '进入工作流' },
 ]
 
-const TARGETS = [
-  ['rules_only', '只生成规则说明'],
-  ['playable', '做可玩版本'],
-  ['solver', '做自动求解'],
-  ['play_and_solve', '可玩 + 自动求解'],
-]
-
-const STATUS_LABELS = {
-  needs_clarification: '等待补充',
-  understanding_ready: '理解已就绪',
-  prd_ready: 'PRD 待提交',
-  review_pending: '等待维护者 review',
+function activeStep(status) {
+  if (!status) return 0
+  if (status === 'needs_clarification' || status === 'understanding_ready') return 1
+  if (status === 'prd_ready' || status === 'needs_edit') return 2
+  if (status === 'review_pending') return 3
+  return 0
 }
 
-const GITHUB_PROGRESS_URL = 'https://github.com/ChatArch/ChatGame'
-
-function currentStep(job) {
-  if (!job) return 'upload'
-  if (job.status === 'needs_clarification') return 'clarify'
-  if (job.status === 'prd_ready' || job.status === 'review_pending') return 'prd'
-  return 'understand'
-}
-
-function questionAnswered(question, answers) {
-  const value = answers[question.id]
-  if (Array.isArray(value)) return value.length > 0
-  return typeof value === 'string' && value.trim().length > 0
+function defaultAnswer(question) {
+  return question.options?.[0]?.value || ''
 }
 
 export default function Contribute() {
-  const [form, setForm] = useState({ name: '', rules: '', target: 'play_and_solve' })
+  const [form, setForm] = useState({ name: '', rules: '', target_type: 'playable_solver' })
   const [file, setFile] = useState(null)
   const [job, setJob] = useState(null)
   const [answers, setAnswers] = useState({})
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState(null)
+  const [prdDraft, setPrdDraft] = useState('')
+  const [editingPrd, setEditingPrd] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const step = currentStep(job)
   const questions = job?.understanding?.questions || []
-  const allAnswered = questions.every(question => questionAnswered(question, answers))
-  const canSubmit = form.name.trim() && form.rules.trim() && file && !busy
-  const imagePreview = useMemo(() => file ? URL.createObjectURL(file) : null, [file])
+  const currentStep = activeStep(job?.status)
+  const canUpload = form.name && form.rules && file && !loading
+  const canAnswer = questions.every(q => answers[q.id]) && !loading
+  const canGeneratePrd = job?.status !== 'needs_clarification' && !loading
 
-  async function submit(e) {
-    e.preventDefault()
-    setBusy(true)
-    setError(null)
+  const statusText = useMemo(() => {
+    const map = {
+      needs_clarification: '模型分析发现资料里还有模糊点，需要先补充确认。',
+      understanding_ready: '模型分析完成，当前资料足够，可以直接生成 PRD 草稿。',
+      prd_ready: 'PRD 已生成，进入用户 Review；可编辑、返回上一步，或确认进入工作流。',
+      review_pending: '已进入后续工作流，当前等待维护者 review 后决定是否启动开发。',
+      needs_edit: '维护者要求补充或修改 PRD 后再提交。',
+    }
+    return map[job?.status] || '还没有创建接入申请。'
+  }, [job?.status])
+
+  async function run(action) {
+    setLoading(true)
+    setError('')
+    setMessage('')
     try {
-      const fd = new FormData()
-      fd.append('name', form.name)
-      fd.append('rules', form.rules)
-      fd.append('target', form.target)
-      fd.append('image', file)
-      const nextJob = await fetchJson('/api/contributions', { method: 'POST', body: fd }, 30000)
-      setJob(nextJob)
-      setAnswers({})
+      await action()
     } catch (err) {
-      setError(err.message)
+      setError(err.message || '请求失败')
     } finally {
-      setBusy(false)
+      setLoading(false)
     }
   }
 
-  async function submitAnswers() {
-    setBusy(true)
-    setError(null)
-    try {
+  function updateQuestionAnswer(questionId, value) {
+    setAnswers(prev => ({ ...prev, [questionId]: value }))
+  }
+
+  function hydrateAnswers(nextJob) {
+    const next = {}
+    for (const question of nextJob?.understanding?.questions || []) {
+      next[question.id] = defaultAnswer(question)
+    }
+    setAnswers(next)
+  }
+
+  function submitUpload(event) {
+    event.preventDefault()
+    run(async () => {
+      const data = new FormData()
+      data.append('name', form.name)
+      data.append('rules', form.rules)
+      data.append('target_type', form.target_type)
+      data.append('image', file)
+      const created = await fetchJson('/api/contributions', { method: 'POST', body: data }, 20000)
+      setJob(created)
+      setPrdDraft(created.prd || '')
+      hydrateAnswers(created)
+      setMessage('已创建接入申请。系统只会做结构化理解，不会自动执行代码。')
+    })
+  }
+
+  function submitAnswers() {
+    run(async () => {
       const payload = {
         answers: questions.map(question => ({
           question_id: question.id,
           value: answers[question.id],
         })),
       }
-      const nextJob = await fetchJson(`/api/contributions/${job.job_id}/answers`, {
+      const updated = await fetchJson(`/api/contributions/${job.id}/answers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-      setJob(nextJob)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setBusy(false)
-    }
+      setJob(updated)
+      hydrateAnswers(updated)
+      setMessage('补充信息已提交，模型分析已重新整理。')
+    })
   }
 
-  async function generatePrd() {
-    setBusy(true)
-    setError(null)
-    try {
-      const nextJob = await fetchJson(`/api/contributions/${job.job_id}/generate-prd`, { method: 'POST' })
-      setJob(nextJob)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setBusy(false)
-    }
+  function generatePrd() {
+    run(async () => {
+      const updated = await fetchJson(`/api/contributions/${job.id}/generate-prd`, { method: 'POST' }, 20000)
+      setJob(updated)
+      setPrdDraft(updated.prd || '')
+      setEditingPrd(false)
+      setMessage('PRD 已生成，请先用户 Review；确认后再进入后续工作流。')
+    })
   }
 
-  async function submitForReview() {
-    setBusy(true)
-    setError(null)
-    try {
-      const nextJob = await fetchJson(`/api/contributions/${job.job_id}/approve-prd`, { method: 'POST' })
-      setJob(nextJob)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setBusy(false)
-    }
+  function returnToAnalysis() {
+    run(async () => {
+      const updated = await fetchJson(`/api/contributions/${job.id}/reanalyze`, { method: 'POST' }, 20000)
+      setJob(updated)
+      hydrateAnswers(updated)
+      setEditingPrd(false)
+      setMessage('已返回模型分析。可以处理模糊点，或在资料足够时重新生成 PRD。')
+    })
   }
 
-  function answerQuestion(question, value) {
-    setAnswers(current => ({ ...current, [question.id]: value }))
+  function savePrd() {
+    run(async () => {
+      const updated = await fetchJson(`/api/contributions/${job.id}/edit-prd`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: prdDraft }),
+      })
+      setJob(updated)
+      setEditingPrd(false)
+      setMessage('PRD 已保存，仍处于提交 review 前的草稿状态。')
+    })
+  }
+
+  function submitReview() {
+    run(async () => {
+      const updated = await fetchJson(`/api/contributions/${job.id}/submit-review`, { method: 'POST' })
+      setJob(updated)
+      setMessage(updated.user_message)
+    })
+  }
+
+  function resetFlow() {
+    setJob(null)
+    setAnswers({})
+    setPrdDraft('')
+    setEditingPrd(false)
+    setMessage('')
+    setError('')
   }
 
   return (
     <div className={styles.wrap}>
       <section className={styles.hero}>
-        <span className={styles.eyebrow}>安全受限原型</span>
+        <p className={styles.eyebrow}>受限交互式接入流程</p>
         <h1 className={styles.title}>接入新游戏向导</h1>
         <p className={styles.desc}>
-          上传截图和规则后，系统先判断资料是否足够；不足时只通过有限问题补充，确认后生成 PRD 草稿。当前原型不执行代码、不修改仓库、不创建 PR。
+          上传截图和规则后，系统进入模型分析环节，先判断资料是否足够；发现模糊点时才提供选项或按钮让用户确认。
+          前两步用于确保 PRD 完整，用户 Review 确认后才进入后续工作流。
         </p>
       </section>
 
-      <div className={styles.stepper}>
-        {STEPS.map((item, index) => (
-          <div key={item.key} className={`${styles.step} ${item.key === step ? styles.stepActive : ''}`}>
+      <div className={styles.steps}>
+        {STEPS.map((step, index) => (
+          <div key={step.key} className={`${styles.step} ${index <= currentStep ? styles.stepActive : ''}`}>
             <span>{index + 1}</span>
-            {item.label}
+            {step.label}
           </div>
         ))}
       </div>
 
-      {error && <div className={styles.error}>{error}</div>}
+      <div className={styles.layout}>
+        <main className={styles.panel}>
+          {!job && (
+            <form className={styles.form} onSubmit={submitUpload}>
+              <label className={styles.label}>
+                游戏名称 <span className={styles.required}>*</span>
+                <input
+                  required
+                  className={styles.input}
+                  placeholder="例：数独 / 数字华容道"
+                  value={form.name}
+                  onChange={event => setForm({ ...form, name: event.target.value })}
+                />
+              </label>
 
-      <div className={styles.grid}>
-        <section className={styles.panel}>
-          <div className={styles.panelHead}>
-            <h2>1. 上传资料</h2>
-            <small>用户输入只作为待分析数据</small>
-          </div>
-          <form className={styles.form} onSubmit={submit}>
-            <label className={styles.label}>
-              游戏名称 <span>*</span>
-              <input className={styles.input} value={form.name} placeholder="例：数独 / 数字华容道"
-                onChange={e => setForm({ ...form, name: e.target.value })} />
-            </label>
+              <label className={styles.label}>
+                接入目标
+                <select
+                  className={styles.input}
+                  value={form.target_type}
+                  onChange={event => setForm({ ...form, target_type: event.target.value })}
+                >
+                  {TARGET_TYPES.map(type => <option key={type.value} value={type.value}>{type.label}</option>)}
+                </select>
+              </label>
 
-            <label className={styles.label}>
-              接入目标
-              <select className={styles.input} value={form.target}
-                onChange={e => setForm({ ...form, target: e.target.value })}>
-                {TARGETS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-              </select>
-            </label>
+              <label className={styles.label}>
+                游戏截图 <span className={styles.required}>*</span>
+                <div className={styles.fileZone} onClick={() => document.getElementById('contribution-file').click()}>
+                  {file ? <span>{file.name}</span> : '点击上传截图（PNG / JPG / WebP，最多 5MB）'}
+                  <input
+                    id="contribution-file"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    hidden
+                    required
+                    onChange={event => setFile(event.target.files?.[0] || null)}
+                  />
+                </div>
+              </label>
 
-            <label className={styles.label}>
-              游戏截图 <span>*</span>
-              <div className={styles.fileZone} onClick={() => document.getElementById('contribute-file').click()}>
-                {imagePreview
-                  ? <img src={imagePreview} alt="上传预览" className={styles.preview} />
-                  : <span>点击上传 PNG / JPG / WebP，单张不超过 5MB</span>}
-                <input id="contribute-file" type="file" accept="image/png,image/jpeg,image/webp" hidden
-                  onChange={e => setFile(e.target.files[0])} />
-              </div>
-              {file && <small className={styles.fileName}>{file.name}</small>}
-            </label>
+              <label className={styles.label}>
+                规则描述 <span className={styles.required}>*</span>
+                <textarea
+                  required
+                  className={styles.textarea}
+                  rows={7}
+                  placeholder={'描述棋盘结构、操作规则、胜利条件和希望第一版做到哪里。'}
+                  value={form.rules}
+                  onChange={event => setForm({ ...form, rules: event.target.value })}
+                />
+              </label>
 
-            <label className={styles.label}>
-              规则描述 <span>*</span>
-              <textarea className={styles.textarea} rows={7}
-                placeholder={'描述玩法、限制条件、胜利条件。\n例如：9x9 数独，每行每列和每个 3x3 宫不能重复，填满后过关。'}
-                value={form.rules} onChange={e => setForm({ ...form, rules: e.target.value })} />
-            </label>
-
-            <button className="btn-primary" type="submit" disabled={!canSubmit}>
-              {busy && !job ? '分析中...' : '开始受限分析'}
-            </button>
-          </form>
-        </section>
-
-        <section className={styles.panel}>
-          <div className={styles.panelHead}>
-            <h2>2. 模型理解</h2>
-            <small>{job ? STATUS_LABELS[job.status] || job.status : '等待上传'}</small>
-          </div>
-
-          {!job && <div className={styles.empty}>上传资料后，这里会显示结构化理解结果。</div>}
+              <button type="submit" className="btn-primary" disabled={!canUpload}>
+                创建接入申请
+              </button>
+            </form>
+          )}
 
           {job && (
-            <div className={styles.understanding}>
-              <div className={styles.metricRow}>
-                <div><strong>{Math.round((job.understanding.confidence || 0) * 100)}%</strong><span>置信度</span></div>
-                <div><strong>{job.understanding.sufficient ? '足够' : '待补充'}</strong><span>资料状态</span></div>
-                <div><strong>{job.understanding.board?.type || 'unknown'}</strong><span>局面结构</span></div>
+            <div className={styles.workspace}>
+              <div className={styles.statusCard}>
+                <span className={styles.badge}>{job.status}</span>
+                <h2>{job.name}</h2>
+                <p>{statusText}</p>
               </div>
 
-              <p className={styles.summary}>{job.understanding.summary}</p>
-
-              <h3>已理解规则</h3>
-              <ul className={styles.list}>
-                {job.understanding.understood_rules.map(rule => <li key={rule}>{rule}</li>)}
-              </ul>
-
-              {job.understanding.missing_information.length > 0 && (
-                <>
-                  <h3>还需要确认</h3>
-                  <ul className={styles.listMuted}>
-                    {job.understanding.missing_information.map(item => <li key={item}>{item}</li>)}
-                  </ul>
-                </>
-              )}
-
-              {job.understanding.risk_flags.length > 0 && (
-                <div className={styles.risk}>检测到风险：{job.understanding.risk_flags.join(', ')}</div>
-              )}
-            </div>
-          )}
-        </section>
-
-        <section className={styles.panel}>
-          <div className={styles.panelHead}>
-            <h2>3. 有限补充</h2>
-            <small>只允许固定问题和白名单动作</small>
-          </div>
-
-          {!job && <div className={styles.empty}>等待模型生成需要确认的问题。</div>}
-
-          {job && questions.length === 0 && (
-            <div className={styles.readyBox}>
-              <strong>资料已足够生成 PRD 草稿。</strong>
-              <span>下一步需要用户主动点击生成，系统不会自动执行。</span>
-            </div>
-          )}
-
-          {questions.length > 0 && (
-            <div className={styles.questions}>
-              {questions.map(question => (
-                <div key={question.id} className={styles.questionCard}>
-                  <h3>{question.question}</h3>
-                  {question.type === 'single_choice' && question.options.map(option => (
-                    <label key={option.value} className={styles.option}>
-                      <input type="radio" name={question.id} value={option.value}
-                        checked={answers[question.id] === option.value}
-                        onChange={() => answerQuestion(question, option.value)} />
-                      {option.label}
-                    </label>
-                  ))}
-                  {question.type === 'short_text' && (
-                    <textarea className={styles.textarea} rows={4} maxLength={question.max_length || 500}
-                      placeholder="请补充一句简短说明"
-                      value={answers[question.id] || ''}
-                      onChange={e => answerQuestion(question, e.target.value)} />
-                  )}
+              <section className={styles.section}>
+                <h3>模型分析</h3>
+                <p>{job.understanding?.summary}</p>
+                <div className={styles.metaGrid}>
+                  <span>置信度：{Math.round((job.understanding?.confidence || 0) * 100)}%</span>
+                  <span>类型：{job.understanding?.game_type || 'unknown'}</span>
+                  <span>截图：{job.image?.width} × {job.image?.height}</span>
                 </div>
-              ))}
-              <button className="btn-primary" type="button" onClick={submitAnswers} disabled={!allAnswered || busy}>
-                提交补充并重新分析
-              </button>
+                <ul className={styles.list}>
+                  {(job.understanding?.understood_rules || []).map(rule => <li key={rule}>{rule}</li>)}
+                </ul>
+              </section>
+
+              {questions.length > 0 && job.status !== 'review_pending' && (
+                <section className={styles.section}>
+                  <h3>发现的模糊点</h3>
+                  {questions.map(question => (
+                    <div key={question.id} className={styles.question}>
+                      <strong>{question.question}</strong>
+                      <div className={styles.options}>
+                        {question.options.map(option => (
+                          <label key={option.value} className={styles.option}>
+                            <input
+                              type="radio"
+                              name={question.id}
+                              checked={answers[question.id] === option.value}
+                              onChange={() => updateQuestionAnswer(question.id, option.value)}
+                            />
+                            {option.label}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  <button className="btn-primary" onClick={submitAnswers} disabled={!canAnswer}>
+                    提交补充并重新分析
+                  </button>
+                </section>
+              )}
+
+              {job.status !== 'review_pending' && (
+                <section className={styles.section}>
+                  <h3>用户 Review PRD</h3>
+                  {!job.prd && <p className={styles.muted}>模型分析确认资料足够后，可以生成 PRD。用户在这里 review，可返回模型分析继续补充；确认后进入后续工作流。</p>}
+                  {job.prd && !editingPrd && <pre className={styles.prdPreview}>{job.prd}</pre>}
+                  {job.prd && editingPrd && (
+                    <textarea
+                      className={`${styles.textarea} ${styles.prdEditor}`}
+                      value={prdDraft}
+                      onChange={event => setPrdDraft(event.target.value)}
+                    />
+                  )}
+                  <div className={styles.actions}>
+                    <button className="btn-primary" onClick={generatePrd} disabled={!canGeneratePrd}>
+                      {job.prd ? '重新生成 PRD' : '生成 PRD'}
+                    </button>
+                    {job.prd && !editingPrd && <button className={styles.secondaryBtn} onClick={() => setEditingPrd(true)}>编辑 PRD</button>}
+                    {job.prd && !editingPrd && <button className={styles.secondaryBtn} onClick={returnToAnalysis} disabled={loading}>返回模型分析</button>}
+                    {job.prd && editingPrd && <button className={styles.secondaryBtn} onClick={savePrd} disabled={loading}>保存 PRD</button>}
+                    {job.prd && <button className={styles.reviewBtn} onClick={submitReview} disabled={loading}>确认并进入工作流</button>}
+                  </div>
+                </section>
+              )}
+
+              {job.status === 'review_pending' && (
+                <section className={`${styles.section} ${styles.doneBox}`}>
+                  <h3>已提交</h3>
+                  <p>你的需求已经进入后续工作流。当前会先等待维护者 review，再决定是否启动真实开发。</p>
+                  <a href={job.github_url} target="_blank" rel="noreferrer">在 GitHub 查看项目进展</a>
+                  <button className={styles.secondaryBtn} onClick={() => setEditingPrd(true)}>需要修改时可重新编辑 PRD</button>
+                  {editingPrd && (
+                    <>
+                      <textarea
+                        className={`${styles.textarea} ${styles.prdEditor}`}
+                        value={prdDraft || job.prd || ''}
+                        onChange={event => setPrdDraft(event.target.value)}
+                      />
+                      <button className="btn-primary" onClick={savePrd} disabled={loading}>保存为草稿，稍后再提交</button>
+                    </>
+                  )}
+                </section>
+              )}
             </div>
           )}
-        </section>
+        </main>
 
-        <section className={`${styles.panel} ${styles.prdPanel}`}>
-          <div className={styles.panelHead}>
-            <h2>4. PRD 草稿</h2>
-            <small>{job?.prd ? '已生成' : '等待生成'}</small>
-          </div>
-
-          {!job?.prd && (
-            <div className={styles.empty}>
-              模型理解确认后，可以生成 PRD 草稿。第一版提交给维护者 review 后停止，不继续执行实现动作。
-            </div>
-          )}
-
-          {job?.prd && <pre className={styles.prd}>{job.prd}</pre>}
-
-          {job?.status === 'review_pending' && (
-            <div className={styles.submittedBox}>
-              <strong>已提交审核</strong>
-              <span>{job.review?.message || '维护者 review 后会决定是否进入实现阶段。'}</span>
-              <a href={job.review?.progress_url || GITHUB_PROGRESS_URL} target="_blank" rel="noreferrer">
-                在 GitHub 查看项目进展
-              </a>
-            </div>
-          )}
-
-          <div className={styles.actions}>
-            <button className="btn-primary" type="button" onClick={generatePrd}
-              disabled={!job || job.status !== 'understanding_ready' || busy}>
-              生成 PRD 草稿
-            </button>
-            <button className="btn-ghost" type="button" onClick={submitForReview}
-              disabled={!job?.prd || job.status !== 'prd_ready' || busy}>
-              提交维护者 review
-            </button>
-          </div>
-        </section>
+        <aside className={styles.aside}>
+          <h3>安全边界</h3>
+          <ul>
+            <li>上传内容只作为数据，不作为系统指令。</li>
+            <li>模型输出走固定 JSON 和白名单按钮。</li>
+            <li>本阶段不执行 shell、不改仓库、不创建 PR。</li>
+            <li>提交后进入 review_pending，等待维护者审核。</li>
+          </ul>
+          {job && <button className={styles.secondaryBtn} onClick={resetFlow}>新建另一个申请</button>}
+        </aside>
       </div>
+
+      {message && <div className={styles.toast}>{message}</div>}
+      {error && <div className={`${styles.toast} ${styles.errorToast}`}>{error}</div>}
     </div>
   )
 }
