@@ -36,3 +36,12 @@
   summary: Release 0.1.8 with frontend component tests, Playwright E2E, packaged web_static sync validation, and expanded Web asset CI/install-smoke gates.
   pr: https://github.com/ChatArch/ChatGame/pull/6
   publish_run: https://github.com/ChatArch/ChatGame/actions/runs/26349400816
+- time: 2026-07-02T14:19:03Z
+  version: 0.1.9
+  tag: v0.1.9
+  commit: da63f9fc8bec58c8aacb8488912379d28c76dd5f
+  operator: OpenAI Codex
+  summary: Release 0.1.9 with the safe contribution PRD wizard, maintainer review workflow, contribution documentation, and packaged web assets.
+  pr: https://github.com/ChatArch/ChatGame/pull/7
+  release_pr: https://github.com/ChatArch/ChatGame/pull/8
+  publish_run: https://github.com/ChatArch/ChatGame/actions/runs/28597066196
