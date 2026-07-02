@@ -22,20 +22,33 @@ export default function PlayList() {
     <div>
       <h1 className={styles.title}>玩游戏</h1>
       <div className={styles.grid}>
-        {games.map(g => (
-          <div key={g.id} className={styles.card}>
-            <div className={styles.cardTop}>
-              <span className={styles.badge}>已支持</span>
+        {games.map(g => {
+          const pending = g.status === 'review_pending' || g.status === 'needs_edit'
+          return (
+            <div key={g.id} className={`${styles.card} ${pending ? styles.cardPending : ''}`}>
+              <div className={styles.cardTop}>
+                <span className={`${styles.badge} ${pending ? styles.badgePending : ''}`}>
+                  {pending ? '待评审' : '已支持'}
+                </span>
+              </div>
+              <h2 className={styles.cardTitle}>{g.name}</h2>
+              <p className={styles.cardDesc}>{g.description}</p>
+              <div className={styles.cardActions}>
+                {pending ? (
+                  <>
+                    <span className={styles.disabledBtn}>等待 review</span>
+                    <a href={g.github_url || 'https://github.com/ChatArch/ChatGame'} target="_blank" rel="noreferrer" className={styles.linkBtn}>GitHub 进展</a>
+                  </>
+                ) : (
+                  <>
+                    <Link to={`/play/${g.id}?tab=start`} className={styles.linkBtn}>开始游戏</Link>
+                    <Link to={`/play/${g.id}?tab=rules`} className={styles.linkBtn}>玩法说明</Link>
+                  </>
+                )}
+              </div>
             </div>
-            <h2 className={styles.cardTitle}>{g.name}</h2>
-            <p className={styles.cardDesc}>{g.description}</p>
-            <div className={styles.cardActions}>
-              <Link to={`/play/${g.id}?tab=start`} className={styles.linkBtn}>开始游戏</Link>
-              <Link to={`/play/${g.id}?tab=rules`} className={styles.linkBtn}>玩法说明</Link>
-            </div>
-          </div>
-        ))}
-        {/* 占位卡片 */}
+          )
+        })}
         {[1, 2].map(i => (
           <div key={i} className={`${styles.card} ${styles.cardPlaceholder}`}>
             <span className={styles.badge} style={{ background: '#f0f0f0', color: '#999' }}>即将上线</span>

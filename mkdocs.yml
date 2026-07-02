@@ -20,6 +20,7 @@ nav:
   - 首页: index.md
   - 快速上手: quickstart.md
   - CLI 参考: cli.md
+  - Contribute 接入向导: contribute-wizard.md
   - 前端测试: frontend-testing.md
   - 游戏库:
       - 牛牛摆放谜题:

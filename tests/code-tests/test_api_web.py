@@ -86,6 +86,79 @@ def test_api_returns_404_when_web_ui_disabled(monkeypatch):
     assert response.status_code == 404
 
 
+def test_contribution_prd_review_flow(tmp_path, monkeypatch):
+    api = _load_api(monkeypatch, disable_ui=True)
+    monkeypatch.setattr(api, "_CONTRIBUTIONS_ROOT", tmp_path / "contributions")
+    client = TestClient(api.app)
+    image_buf = io.BytesIO()
+    Image.new("RGB", (40, 40), (255, 255, 255)).save(image_buf, format="PNG")
+
+    created = client.post(
+        "/api/contributions",
+        data={
+            "name": "数独",
+            "rules": "9x9 棋盘，目标是填满数字，每行每列每宫不重复。",
+            "target_type": "playable_solver",
+        },
+        files={"image": ("sudoku.png", image_buf.getvalue(), "image/png")},
+    )
+
+    assert created.status_code == 200
+    job = created.json()
+    assert job["status"] == "understanding_ready"
+    assert job["understanding"]["game_type"] == "logic_puzzle"
+    assert "uploads" not in str(job.get("image", {}))
+
+    answers = [
+        {
+            "question_id": question["id"],
+            "value": question["options"][0]["value"],
+        }
+        for question in job["understanding"]["questions"]
+    ]
+    answered = client.post(f"/api/contributions/{job['id']}/answers", json={"answers": answers})
+    assert answered.status_code == 200
+    assert answered.json()["status"] == "understanding_ready"
+
+    prd = client.post(f"/api/contributions/{job['id']}/generate-prd")
+    assert prd.status_code == 200
+    assert prd.json()["status"] == "prd_ready"
+    assert "维护者 review" in prd.json()["prd"]
+
+    edited = client.post(
+        f"/api/contributions/{job['id']}/edit-prd",
+        json={"content": prd.json()["prd"] + "\n## 用户补充\n需要先 review。\n"},
+    )
+    assert edited.status_code == 200
+    assert edited.json()["status"] == "prd_ready"
+
+    submitted = client.post(f"/api/contributions/{job['id']}/submit-review")
+    assert submitted.status_code == 200
+    assert submitted.json()["status"] == "review_pending"
+    assert "GitHub" in submitted.json()["user_message"]
+
+    games = client.get("/api/games").json()["games"]
+    pending = [game for game in games if game.get("job_id") == job["id"]]
+    assert pending
+    assert pending[0]["status"] == "review_pending"
+    assert pending[0]["github_url"].startswith("https://github.com/")
+
+
+def test_contribution_rejects_non_image_upload(tmp_path, monkeypatch):
+    api = _load_api(monkeypatch, disable_ui=True)
+    monkeypatch.setattr(api, "_CONTRIBUTIONS_ROOT", tmp_path / "contributions")
+    client = TestClient(api.app)
+
+    response = client.post(
+        "/api/contributions",
+        data={"name": "测试", "rules": "规则", "target_type": "docs_only"},
+        files={"image": ("notes.txt", b"not an image", "text/plain")},
+    )
+
+    assert response.status_code == 400
+    assert "PNG" in response.json()["detail"]
+
+
 def test_solve_returns_warning_for_non_unique_solution(monkeypatch, mocker):
     api = _load_api(monkeypatch, disable_ui=True)
     client = TestClient(api.app)
