@@ -1,43 +1,143 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
-         <loc>https://chatarch.github.io/ChatGame/</loc>
-         <lastmod>2026-07-02</lastmod>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/"/>
     </url>
     <url>
-         <loc>https://chatarch.github.io/ChatGame/cli/</loc>
-         <lastmod>2026-07-02</lastmod>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/cli-tree/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/cli-tree/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/cli-tree/"/>
     </url>
     <url>
-         <loc>https://chatarch.github.io/ChatGame/contribute-wizard/</loc>
-         <lastmod>2026-07-02</lastmod>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/cli/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/cli/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/cli/"/>
     </url>
     <url>
-         <loc>https://chatarch.github.io/ChatGame/frontend-testing/</loc>
-         <lastmod>2026-07-02</lastmod>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/contribute-wizard/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/contribute-wizard/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/contribute-wizard/"/>
     </url>
     <url>
-         <loc>https://chatarch.github.io/ChatGame/index.en/</loc>
-         <lastmod>2026-07-02</lastmod>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/frontend-testing/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/frontend-testing/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/frontend-testing/"/>
     </url>
     <url>
-         <loc>https://chatarch.github.io/ChatGame/quickstart/</loc>
-         <lastmod>2026-07-02</lastmod>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/quickstart/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/quickstart/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/quickstart/"/>
     </url>
     <url>
-         <loc>https://chatarch.github.io/ChatGame/games/cow-puzzle/algorithm/</loc>
-         <lastmod>2026-07-02</lastmod>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/games/cow-puzzle/algorithm/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/games/cow-puzzle/algorithm/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/games/cow-puzzle/algorithm/"/>
     </url>
     <url>
-         <loc>https://chatarch.github.io/ChatGame/games/cow-puzzle/generation/</loc>
-         <lastmod>2026-07-02</lastmod>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/games/cow-puzzle/generation/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/games/cow-puzzle/generation/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/games/cow-puzzle/generation/"/>
     </url>
     <url>
-         <loc>https://chatarch.github.io/ChatGame/games/cow-puzzle/rules/</loc>
-         <lastmod>2026-07-02</lastmod>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/games/cow-puzzle/rules/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/games/cow-puzzle/rules/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/games/cow-puzzle/rules/"/>
     </url>
     <url>
-         <loc>https://chatarch.github.io/ChatGame/games/cow-puzzle/strategy/</loc>
-         <lastmod>2026-07-02</lastmod>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/games/cow-puzzle/strategy/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/games/cow-puzzle/strategy/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/games/cow-puzzle/strategy/"/>
+    </url>
+    <url>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/en/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/"/>
+    </url>
+    <url>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/en/cli-tree/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/cli-tree/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/cli-tree/"/>
+    </url>
+    <url>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/en/cli/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/cli/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/cli/"/>
+    </url>
+    <url>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/en/contribute-wizard/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/contribute-wizard/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/contribute-wizard/"/>
+    </url>
+    <url>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/en/frontend-testing/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/frontend-testing/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/frontend-testing/"/>
+    </url>
+    <url>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/en/quickstart/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/quickstart/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/quickstart/"/>
+    </url>
+    <url>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/en/games/cow-puzzle/algorithm/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/games/cow-puzzle/algorithm/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/games/cow-puzzle/algorithm/"/>
+    </url>
+    <url>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/en/games/cow-puzzle/generation/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/games/cow-puzzle/generation/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/games/cow-puzzle/generation/"/>
+    </url>
+    <url>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/en/games/cow-puzzle/rules/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/games/cow-puzzle/rules/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/games/cow-puzzle/rules/"/>
+    </url>
+    <url>
+        <loc>https://arch.gh.wzhecnu.cn/ChatGame/en/games/cow-puzzle/strategy/</loc>
+        <lastmod>2026-08-11</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="https://arch.gh.wzhecnu.cn/ChatGame/en/games/cow-puzzle/strategy/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://arch.gh.wzhecnu.cn/ChatGame/games/cow-puzzle/strategy/"/>
     </url>
 </urlset>
