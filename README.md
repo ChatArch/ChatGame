@@ -5,7 +5,7 @@
     <a href="https://github.com/ChatArch/ChatGame/actions/workflows/ci.yml">
         <img src="https://github.com/ChatArch/ChatGame/actions/workflows/ci.yml/badge.svg" alt="Tests" />
     </a>
-    <a href="https://chatarch.github.io/ChatGame/">
+    <a href="https://arch.gh.wzhecnu.cn/ChatGame/">
         <img src="https://img.shields.io/badge/docs-mkdocs-blue.svg" alt="Documentation" />
     </a>
 </div>
@@ -15,35 +15,48 @@
 [English](README.en.md) | [简体中文](README.md)
 </div>
 
-# chatgame
+# ChatGame
 
-chatgame package
+ChatGame 是游戏谜题截图求解工具：从截图解析棋盘，输出求解步骤，并提供安装态 Web UI。
 
 ## 快速开始
 
 ```bash
-pip install -e ".[dev]"
-chatgame hello ChatArch
+pip install chatgame
+chatgame --version
+chatgame --tree
+chatgame games
+chatgame solve level24.png -o solved.png
+chatgame web setup
+chatgame web serve
+```
+
+## 当前 CLI
+
+```text
+chatgame # chatgame — 游戏谜题求解工具。
+├── games
+├── solve IMAGE [--game GAME] [--size SIZE] [--output OUTPUT] [--verbose]
+└── web
+    ├── web serve [--host HOST] [--port PORT] [--reload]
+    └── web setup
+```
+
+完整命令树见： https://arch.gh.wzhecnu.cn/ChatGame/cli-tree/
+
+## 文档
+
+- 文档首页： https://arch.gh.wzhecnu.cn/ChatGame/
+- CLI 树： https://arch.gh.wzhecnu.cn/ChatGame/cli-tree/
+- 英文文档： https://arch.gh.wzhecnu.cn/ChatGame/en/
+
+## 开发验证
+
+```bash
+pip install -e ".[dev,docs]"
 python -m pytest -q
+mkdocs build --strict
 python -m build
 ```
 
-## CLI 规范
-
-这个模板默认依赖 `chatstyle>=0.1.0` 和 `chatenv>=0.1.1`，新的命令应优先使用：
-
-- `CommandSchema` / `CommandField` 描述输入。
-- `add_interactive_option()` 提供统一 `-i/-I`。
-- `resolve_command_inputs()` 统一缺参补问、默认值、TTY 与校验。
-
-## 目录结构
-
-- `src/`：包源码
-- `tests/code-tests/`：代码测试和历史测试迁移
-- `tests/cli-tests/`：真实 CLI 测试，doc-first
-- `tests/mock-cli-tests/`：mock/fake CLI 测试，doc-first
-- `docs/`：长期维护文档，由 mkdocs 构建
-
-## 开发说明
-
-扩展脚手架前，先阅读 `DEVELOP.md` 和 `AGENTS.md`。
+扩展前先阅读 `DEVELOP.md` 和 `AGENTS.md`。

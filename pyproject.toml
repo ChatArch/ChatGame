@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "chatgame"
 dynamic = ["version"]
-description = "chatgame package"
+description = "Game puzzle screenshot solver with CLI and Web UI"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -27,12 +27,17 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+[project.urls]
+Homepage = "https://github.com/ChatArch/ChatGame"
+Repository = "https://github.com/ChatArch/ChatGame"
+Documentation = "https://arch.gh.wzhecnu.cn/ChatGame/"
+
 [project.scripts]
 chatgame = "chatgame.cli:main"
 
 [project.optional-dependencies]
 dev = ["build", "httpx", "pytest", "pytest-mock", "twine"]
-docs = ["mkdocs>=1.4.0", "mkdocs-material>=9.0.0", "mike>=2.0.0"]
+docs = ["mkdocs>=1.6,<2.0", "mkdocs-material>=9.5,<10.0", "mkdocs-static-i18n>=1.2,<2.0", "mike>=2.0,<3.0"]
 
 [tool.setuptools.dynamic]
 version = {attr = "chatgame.__version__"}

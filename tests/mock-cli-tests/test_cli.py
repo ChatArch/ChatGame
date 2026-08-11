@@ -7,12 +7,51 @@ from conftest import IMG_8x8, IMG_10x10
 from chatgame.cli import main
 
 
+def test_version_option_reports_package_version():
+    result = CliRunner().invoke(main, ["--version"])
+
+    assert result.exit_code == 0
+    assert "0.1.10" in result.output
+
+
 def test_top_level_help_command():
     result = CliRunner().invoke(main, ["--help"])
 
     assert result.exit_code == 0
+    assert "--tree" in result.output
     assert "solve" in result.output
+    assert "games" in result.output
     assert "web" in result.output
+    assert "hello" not in result.output.lower()
+
+
+def test_tree_option_renders_registered_command_surface_without_eager_import(monkeypatch):
+    original_import = builtins.__import__
+
+    def guarded_import(name, globals=None, locals=None, fromlist=(), level=0):
+        if name == "chatgame.games.cow_puzzle.__main__":
+            raise AssertionError("solver imported while rendering tree")
+        return original_import(name, globals, locals, fromlist, level)
+
+    sys.modules.pop("chatgame.cli", None)
+    monkeypatch.setattr(builtins, "__import__", guarded_import)
+
+    try:
+        cli_module = importlib.import_module("chatgame.cli")
+        result = CliRunner().invoke(cli_module.main, ["--tree"])
+    finally:
+        sys.modules.pop("chatgame.cli", None)
+        importlib.import_module("chatgame.cli")
+
+    assert result.exit_code == 0
+    assert "chatgame # chatgame — 游戏谜题求解工具。" in result.output
+    assert "--tree # Print the registered command tree." in result.output
+    assert "solve IMAGE" in result.output
+    assert "games # 列出已支持的游戏。" in result.output
+    assert "web # Web 服务管理（后端 + 前端）。" in result.output
+    assert "web setup # 检查 Web 运行环境。" in result.output
+    assert "web serve" in result.output
+    assert "hello" not in result.output.lower()
 
 
 def test_help_does_not_eager_import_solver(monkeypatch):

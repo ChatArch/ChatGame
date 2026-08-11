@@ -15,17 +15,26 @@ pip install chatgame
 ```text
 chatgame --version
 chatgame --help
+chatgame --tree
 
 chatgame games
 chatgame solve <IMAGE> [-g] [-n] [-o] [-v]
 
 chatgame web setup
-chatgame web serve [--host] [--port]
+chatgame web serve [--host] [--port] [--reload]
 ```
 
 ---
 
 ## 求解类
+
+### `chatgame --tree`
+
+打印真实注册的命令树；完整说明见 [CLI 树](cli-tree.md)。
+
+```bash
+chatgame --tree
+```
 
 ### `chatgame games`
 

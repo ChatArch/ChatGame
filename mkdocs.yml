@@ -1,6 +1,6 @@
-site_name: chatgame
+site_name: ChatGame 文档
 site_description: 游戏谜题截图求解工具 — 从截图到答案，一条命令
-site_url: https://chatarch.github.io/ChatGame/
+site_url: https://arch.gh.wzhecnu.cn/ChatGame/
 repo_url: https://github.com/ChatArch/ChatGame
 repo_name: ChatGame
 
@@ -16,10 +16,58 @@ theme:
     - navigation.sections
     - content.code.copy
 
+plugins:
+  - search
+  - i18n:
+      docs_structure: suffix
+      fallback_to_default: true
+      reconfigure_material: true
+      reconfigure_search: true
+      languages:
+        - locale: zh
+          default: true
+          name: 中文
+          build: true
+          site_name: ChatGame 文档
+        - locale: en
+          name: English
+          build: true
+          site_name: ChatGame Documentation
+          nav_translations:
+            首页: Home
+            快速上手: Quickstart
+            CLI 参考: CLI Reference
+            CLI 树: CLI Tree
+            Contribute 接入向导: Contribution Wizard
+            前端测试: Frontend Testing
+            游戏库: Game Library
+            牛牛摆放谜题: Cow Puzzle
+            玩法说明: Rules
+            游戏攻略: Strategy
+            求解算法: Solver Algorithm
+            生成与唯一解验证: Generation and Unique-Solution Validation
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+extra:
+  alternate:
+    - name: 中文
+      link: /ChatGame/
+      lang: zh
+    - name: English
+      link: /ChatGame/en/
+      lang: en
+
 nav:
   - 首页: index.md
   - 快速上手: quickstart.md
   - CLI 参考: cli.md
+  - CLI 树: cli-tree.md
   - Contribute 接入向导: contribute-wizard.md
   - 前端测试: frontend-testing.md
   - 游戏库:
@@ -28,4 +76,3 @@ nav:
           - 游戏攻略: games/cow-puzzle/strategy.md
           - 求解算法: games/cow-puzzle/algorithm.md
           - 生成与唯一解验证: games/cow-puzzle/generation.md
-  - English: index.en.md
