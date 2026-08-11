@@ -1,0 +1,1631 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="游戏谜题截图求解工具 — 从截图到答案，一条命令">
+      
+      
+      
+        <link rel="canonical" href="https://arch.gh.wzhecnu.cn/ChatGame/dev/en/contribute-wizard/">
+      
+      
+        <link rel="prev" href="../cli-tree/">
+      
+      
+        <link rel="next" href="../frontend-testing/">
+      
+      
+        
+          <link rel="alternate" href="../../contribute-wizard/" hreflang="zh">
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Contribution Wizard - ChatGame Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="light-blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#contribute" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../" title="ChatGame Documentation" class="md-header__button md-logo" aria-label="ChatGame Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ChatGame Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Contribution Wizard
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="light-blue"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../contribute-wizard/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ChatArch/ChatGame" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ChatGame
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../quickstart/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Quickstart
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../cli/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CLI Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../cli-tree/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CLI Tree
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contribution Wizard
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../frontend-testing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Frontend Testing
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../games/cow-puzzle/rules/" class="md-tabs__link">
+          
+  
+  
+  Game Library
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../" title="ChatGame Documentation" class="md-nav__button md-logo" aria-label="ChatGame Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ChatGame Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ChatArch/ChatGame" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ChatGame
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-tree/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Tree
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribution Wizard
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribution Wizard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        流程截图
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        定位
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么不是开放聊天
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        用户侧使用教程
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        管理员侧处理说明
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        用户流程
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#submit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submit 后交付什么
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数独样例说明
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        测试覆盖
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        状态机
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        常规接口
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="常规接口">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apicontributionsjob_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/contributions/{job_id}
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributionsjob_idanswers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions/{job_id}/answers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributionsjob_idgenerate-prd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions/{job_id}/generate-prd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributionsjob_idedit-prd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions/{job_id}/edit-prd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributionsjob_idsubmit-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions/{job_id}/submit-review
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apicontributionsjob_idartifactsprdmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/contributions/{job_id}/artifacts/PRD.md
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apigames" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/games
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        存储结构
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        后续升级
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frontend-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Game Library
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Game Library
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_1" id="__nav_7_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cow Puzzle
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Cow Puzzle
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../games/cow-puzzle/rules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../games/cow-puzzle/strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../games/cow-puzzle/algorithm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Solver Algorithm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../games/cow-puzzle/generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Generation and Unique-Solution Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        流程截图
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        定位
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        为什么不是开放聊天
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        用户侧使用教程
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        管理员侧处理说明
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        用户流程
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#submit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submit 后交付什么
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数独样例说明
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        测试覆盖
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        状态机
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        常规接口
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="常规接口">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apicontributionsjob_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/contributions/{job_id}
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributionsjob_idanswers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions/{job_id}/answers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributionsjob_idgenerate-prd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions/{job_id}/generate-prd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributionsjob_idedit-prd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions/{job_id}/edit-prd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apicontributionsjob_idsubmit-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/contributions/{job_id}/submit-review
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apicontributionsjob_idartifactsprdmd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/contributions/{job_id}/artifacts/PRD.md
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apigames" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/games
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        存储结构
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        后续升级
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="contribute">Contribute 接入向导</h1>
+<p><code>/contribute</code> 是一个受限交互式 PRD 向导，用来把外部用户的游戏接入想法转成可 review 的设计文档。</p>
+<p><img alt="Contribute wizard flow" src="../../assets/contribute-wizard-flow.svg" /></p>
+<h2 id="_1">流程截图</h2>
+<ol>
+<li>提交资料页：用户填写游戏名称、规则、接入目标并上传截图。</li>
+</ol>
+<p><img alt="Contribute upload step" src="../../assets/contribute-flow-1-upload.png" /></p>
+<ol>
+<li>模型分析页：系统判断资料完整性，并在发现模糊点时给出候选选项或确认按钮。</li>
+</ol>
+<p><img alt="Contribute model analysis step" src="../../assets/contribute-flow-2-analysis.png" /></p>
+<ol>
+<li>用户 Review 页：用户查看生成的 PRD，可以编辑、返回模型分析，或确认进入工作流。</li>
+</ol>
+<p><img alt="Contribute user review step" src="../../assets/contribute-flow-3-user-review.png" /></p>
+<ol>
+<li>正式提交页：进入 <code>review_pending</code>，提示用户等待维护者 review，并提供 GitHub 进展入口。</li>
+</ol>
+<p><img alt="Contribute submitted step" src="../../assets/contribute-flow-4-submitted.png" /></p>
+<h2 id="_2">定位</h2>
+<p>这个页面不直接开工、不直接执行代码、不自动创建 PR。它的核心流程是：</p>
+<ol>
+<li>收集游戏截图、规则描述和接入目标。</li>
+<li>进入模型分析环节，判断资料是否足够支撑完整 PRD。</li>
+<li>如果模型发现模糊点，再用固定问题和按钮让用户补充或确认；如果没有模糊点，直接进入 PRD。</li>
+<li>生成 PRD 后进入用户 Review，用户可以返回上一步继续补充，也可以确认进入后续工作流。</li>
+</ol>
+<h2 id="_3">为什么不是开放聊天</h2>
+<p>开放聊天太灵活，上传图片或规则里可能包含 prompt injection，例如“忽略系统指令”“执行命令”“泄露密钥”。当前设计把模型能力限制在文档整理阶段：</p>
+<ul>
+<li>图片和规则永远只是数据，不是系统指令。</li>
+<li>分析结果使用固定 JSON 结构。</li>
+<li>用户补充只支持有限选项。</li>
+<li>前端按钮是白名单动作，模型不能发明动作。</li>
+<li><code>review_pending</code> 前后都不会运行 shell、修改仓库或上线。</li>
+</ul>
+<h2 id="_4">用户侧使用教程</h2>
+<p>面向提交游戏接入需求的普通用户，页面目标是把想法整理成可 review 的 PRD，而不是直接启动开发。</p>
+<ol>
+<li>打开 <code>/contribute</code>，填写游戏名称、接入目标、规则描述，并上传截图。</li>
+<li>提交后进入“模型分析”。模型会判断资料是否足够形成完整 PRD。</li>
+<li>如果没有明显模糊点，用户可以直接生成 PRD。</li>
+<li>如果模型发现模糊点，页面会展示候选问题、选项或确认按钮；用户选择后，模型重新整理分析结果。</li>
+<li>进入“用户 Review”后，用户可以阅读、编辑 PRD，也可以返回模型分析继续补充。</li>
+<li>用户点击“确认并进入工作流”后，页面提示已提交，后续等待维护者 review。</li>
+<li>用户可以通过页面里的 GitHub 入口查看项目进展。</li>
+</ol>
+<p>用户侧需要明确的边界：提交不代表游戏已经上线，也不代表系统已经开始写代码；它只表示需求已经进入后续工作流。</p>
+<h2 id="_5">管理员侧处理说明</h2>
+<p>面向维护者/管理员，当前版本的目标是收集可审核材料，并把待评审申请暴露到游戏列表，而不是自动执行实现。</p>
+<p>管理员需要 review 的内容：</p>
+<ul>
+<li>用户确认后的 <code>PRD.md</code> 是否清楚描述了游戏目标、规则和验收标准。</li>
+<li><code>model-understanding.json</code> 中的 <code>confidence</code>、<code>sufficient</code> 和 <code>risk_flags</code> 是否合理。</li>
+<li>如果存在 <code>answers.json</code>，检查用户对模糊点的选择是否足以消除歧义。</li>
+<li><code>events.jsonl</code> 是否显示正常流程，没有异常重复提交或可疑输入。</li>
+<li>游戏列表里的“待评审”卡片是否只提供 GitHub 进展入口，没有开放真实 play/solve 能力。</li>
+</ul>
+<p>管理员处理建议：</p>
+<ol>
+<li>如果 PRD 不完整，后续可把申请标记为 <code>needs_edit</code>，让用户回到 Review 或模型分析环节继续补充；当前版本先保留状态语义，不提供公开管理员后台。</li>
+<li>如果 PRD 可以接受，再决定是否进入下一阶段，例如生成 <code>GameSpec.json</code> 或实现计划。</li>
+<li>真实开发必须在隔离工作区或分支内进行，不能直接把用户上传内容用于 shell、依赖安装、仓库写入或发布。</li>
+<li>后续如果要创建 PR，应由维护者触发，而不是由用户 submit 自动触发。</li>
+</ol>
+<h2 id="_6">用户流程</h2>
+<pre><code class="language-text">上传截图 + 规则
+  -&gt; 模型分析资料完整性
+  -&gt; 如有模糊点，展示候选问题 / 确认按钮
+  -&gt; 用户选择确认，或让模型继续分析
+  -&gt; 生成 PRD
+  -&gt; 用户 Review PRD，可返回模型分析继续补充
+  -&gt; 用户确认进入后续工作流
+  -&gt; 当前状态进入 review_pending，等待维护者 review
+</code></pre>
+<p>进入后续工作流后，用户看到的是“已提交，后续维护者会 review”。同时页面给出 GitHub 项目入口，让用户知道可以在 GitHub 查看项目进展。</p>
+<h2 id="submit">Submit 后交付什么</h2>
+<p>用户点击“确认并进入工作流”后，系统不会直接实现游戏，也不会创建 PR。当前版本会交付这些内容给维护者 review：</p>
+<ul>
+<li><code>job.json</code>: 接入申请的结构化状态，包括 <code>status=review_pending</code>、游戏名称、接入目标、图片尺寸、模型分析结果和 GitHub 链接。</li>
+<li><code>PRD.md</code>: 用户确认过的需求文档，是后续维护者判断是否开工的主要输入。</li>
+<li><code>model-understanding.json</code>: 模型分析阶段的结构化理解，包括 <code>sufficient</code>、<code>confidence</code>、<code>risk_flags</code> 和发现的模糊点。</li>
+<li><code>answers.json</code>: 如果模型分析发现模糊点，这里保存用户对候选问题的选择或确认。</li>
+<li><code>events.jsonl</code>: 审计日志，记录创建、补充、生成 PRD、编辑 PRD、提交工作流等状态变化。</li>
+<li>游戏列表中的“待评审”卡片：只展示状态和 GitHub 进展入口，不展示“开始游戏”或“自动求解”。</li>
+</ul>
+<p>维护者拿到这些材料后，再决定是否进入真实开发阶段。真实开发阶段可以在后续版本中继续拆成 <code>GameSpec</code>、实现计划、代码 patch、测试和 PR。</p>
+<h2 id="_7">数独样例说明</h2>
+<p>当前测试里使用“数独”作为端到端样例，是为了验证模型分析、PRD 生成、用户 Review 和 <code>review_pending</code> 列表展示流程。它不是本次改动新增的内置游戏，也不会因为测试通过而自动上线。</p>
+<h2 id="_8">测试覆盖</h2>
+<p>当前测试主要覆盖流程和安全边界：</p>
+<ul>
+<li>后端 contribution 流程：上传截图、模型分析、生成 PRD、编辑 PRD、确认进入工作流、进入 <code>review_pending</code>。</li>
+<li>上传限制：非图片类型会被拒绝。</li>
+<li>游戏列表：<code>review_pending</code> 申请会展示为“待评审”，并只提供 GitHub 进展入口。</li>
+<li>前端构建和 lint：确保 <code>/contribute</code> 页面、列表页和文档资源不会破坏现有 Web 构建。</li>
+<li>文档构建：<code>mkdocs build --strict</code> 确保新增教程、管理员说明和图片资源可被文档站点加载。</li>
+</ul>
+<h2 id="_9">状态机</h2>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>needs_clarification</code></td>
+<td>模型分析发现模糊点，等待用户选择、确认或补充</td>
+</tr>
+<tr>
+<td><code>understanding_ready</code></td>
+<td>模型分析完成，资料足够，可以生成 PRD</td>
+</tr>
+<tr>
+<td><code>prd_ready</code></td>
+<td>PRD 已生成，等待用户 Review；用户可编辑、返回上一步或确认进入工作流</td>
+</tr>
+<tr>
+<td><code>review_pending</code></td>
+<td>用户已确认进入工作流，当前等待维护者 review，不启动实现</td>
+</tr>
+<tr>
+<td><code>needs_edit</code></td>
+<td>维护者要求用户修改后再提交</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_10">常规接口</h2>
+<h3 id="post-apicontributions"><code>POST /api/contributions</code></h3>
+<p>创建接入申请，使用 <code>multipart/form-data</code>。</p>
+<p>字段：</p>
+<ul>
+<li><code>name</code>: 游戏名称。</li>
+<li><code>rules</code>: 游戏规则描述。</li>
+<li><code>target_type</code>: <code>docs_only</code>、<code>playable</code>、<code>solver</code>、<code>playable_solver</code>。</li>
+<li><code>image</code>: PNG、JPG 或 WebP，最大 5MB。</li>
+</ul>
+<p>返回 contribution job，包含 <code>status</code>、<code>understanding</code>、<code>questions</code> 等字段。</p>
+<h3 id="get-apicontributionsjob_id"><code>GET /api/contributions/{job_id}</code></h3>
+<p>读取当前任务状态和 PRD 草稿。</p>
+<h3 id="post-apicontributionsjob_idanswers"><code>POST /api/contributions/{job_id}/answers</code></h3>
+<p>提交模型分析阶段发现的模糊点答案。只有 <code>status=needs_clarification</code> 时才需要用户回答；如果模型没有发现模糊点，可以直接生成 PRD。</p>
+<pre><code class="language-json">{
+  &quot;answers&quot;: [
+    {&quot;question_id&quot;: &quot;win_condition&quot;, &quot;value&quot;: &quot;no_conflict&quot;},
+    {&quot;question_id&quot;: &quot;board_shape&quot;, &quot;value&quot;: &quot;fixed_grid&quot;}
+  ]
+}
+</code></pre>
+<h3 id="post-apicontributionsjob_idgenerate-prd"><code>POST /api/contributions/{job_id}/generate-prd</code></h3>
+<p>根据上传材料、结构化理解和补充答案生成 <code>PRD.md</code> 草稿。</p>
+<h3 id="post-apicontributionsjob_idedit-prd"><code>POST /api/contributions/{job_id}/edit-prd</code></h3>
+<p>保存用户编辑后的 PRD。保存后回到 <code>prd_ready</code>，用户可以再次 Review 并确认进入工作流。</p>
+<pre><code class="language-json">{
+  &quot;content&quot;: &quot;# 游戏接入 PRD\n...&quot;
+}
+</code></pre>
+<h3 id="post-apicontributionsjob_idsubmit-review"><code>POST /api/contributions/{job_id}/submit-review</code></h3>
+<p>用户 Review 确认后进入后续工作流。当前安全策略下，进入工作流后的第一站是 <code>review_pending</code>，等待维护者 review。</p>
+<h3 id="get-apicontributionsjob_idartifactsprdmd"><code>GET /api/contributions/{job_id}/artifacts/PRD.md</code></h3>
+<p>读取生成的 PRD 文档。</p>
+<h3 id="get-apigames"><code>GET /api/games</code></h3>
+<p>返回已支持游戏和 <code>review_pending</code> 接入申请。待评审游戏只显示“待评审”和 GitHub 进展入口，不显示“开始游戏”或“自动求解”。</p>
+<h2 id="_11">存储结构</h2>
+<p>开发环境默认写入：</p>
+<pre><code class="language-text">.chatgame/contributions/&lt;job_id&gt;/
+  input.json
+  job.json
+  model-understanding.json
+  answers.json
+  PRD.md
+  events.jsonl
+  uploads/
+    screenshot.png
+</code></pre>
+<p>接口响应不会暴露服务器上的真实文件路径，只返回文件名、图片尺寸和任务状态。</p>
+<h2 id="_12">后续升级</h2>
+<p>这个版本先停在 PRD review。后续可以在维护者确认后继续增加：</p>
+<ol>
+<li><code>GameSpec.json</code> 生成和 review。</li>
+<li>实现计划生成。</li>
+<li>隔离分支或临时工作区中的代码 patch。</li>
+<li>自动测试和预览。</li>
+<li>由维护者决定是否创建 PR、merge 或发布。</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
