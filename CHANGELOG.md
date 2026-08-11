@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.1.10 - 2026-08-12
+
+### Added
+
+- Add `chatgame --tree`, generated from the real registered Click command surface.
+- Add bilingual CLI tree documentation and expose `--tree` in README/docs quick command examples.
+
+### Changed
+
+- Align MkDocs to the ChatArch public docs domain with `mkdocs-static-i18n` and Material emoji rendering.
+- Harden the tag-driven PyPI publish workflow with tag/version/default-branch/PyPI duplicate guards.
+- Use the package `__version__` for source-mode `chatgame --version`, so `PYTHONPATH=src` CLI smoke works before installation.
+
+### Fixed
+
+- Remove stale scaffold `chatgame hello` examples from README surfaces.
+
 ## 0.1.8 - 2026-05-24
 
 ### Added

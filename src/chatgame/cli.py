@@ -5,15 +5,142 @@ from __future__ import annotations
 import sys
 import click
 
+from chatgame import __version__
+
 _GAMES: dict[str, str] = {
     "cow-puzzle": "牛牛摆放谜题",
 }
 
 
+def _short_help(command: click.Command) -> str:
+    help_text = (command.short_help or command.help or "").strip()
+    if not help_text:
+        return ""
+    return help_text.splitlines()[0].strip()
+
+
+def _format_argument(argument: click.Argument) -> str:
+    metavar = (argument.metavar or argument.name or "ARG").upper().replace("_", "-")
+    if argument.nargs != 1:
+        metavar = f"{metavar}..."
+    if argument.required:
+        return metavar
+    return f"[{metavar}]"
+
+
+def _format_option(option: click.Option) -> str:
+    visible = [flag for flag in option.opts if flag.startswith("--")]
+    visible.extend(flag for flag in option.opts if flag not in visible)
+    if not visible:
+        return ""
+    flag = visible[0]
+    if option.is_flag or option.flag_value is not None:
+        return f"[{flag}]"
+    metavar = (option.metavar or option.name or "VALUE").upper().replace("_", "-")
+    return f"[{flag} {metavar}]"
+
+
+def _format_signature(command: click.Command) -> str:
+    parts: list[str] = []
+    for param in command.params:
+        if getattr(param, "hidden", False):
+            continue
+        if isinstance(param, click.Argument):
+            parts.append(_format_argument(param))
+        elif isinstance(param, click.Option):
+            if param.name in {"help", "version", "tree"}:
+                continue
+            item = _format_option(param)
+            if item:
+                parts.append(item)
+    return " " + " ".join(parts) if parts else ""
+
+
+def _click_group_children(command: click.Command) -> list[tuple[str, click.Command]]:
+    if not isinstance(command, click.Group):
+        return []
+    ctx = click.Context(command, info_name=command.name)
+    children: list[tuple[str, click.Command]] = []
+    for name in command.list_commands(ctx):
+        child = command.get_command(ctx, name)
+        if child is not None:
+            children.append((name, child))
+    return children
+
+
+def _tree_command_line(command: click.Command, path: str) -> str:
+    line = f"{path}{_format_signature(command)}"
+    help_text = _short_help(command)
+    if help_text:
+        line = f"{line} # {help_text}"
+    return line
+
+
+def _render_click_command(command: click.Command, path: str, prefix: str = "", is_last: bool = True) -> list[str]:
+    connector = "└── " if is_last else "├── "
+    lines = [f"{prefix}{connector}{_tree_command_line(command, path)}"]
+    children = [(name, child) for name, child in _click_group_children(command) if child]
+    child_prefix = prefix + ("    " if is_last else "│   ")
+    for index, (name, child) in enumerate(children):
+        lines.extend(
+            _render_click_command(
+                child,
+                f"{path} {name}",
+                prefix=child_prefix,
+                is_last=index == len(children) - 1,
+            )
+        )
+    return lines
+
+
+def render_cli_tree(command: click.Command) -> str:
+    """Render the real registered Click command tree."""
+
+    root_name = command.name or "chatgame"
+    lines = [_tree_command_line(command, root_name)]
+    root_entries = [
+        ("--help", "Show this message and exit."),
+        ("--version", "Show the version and exit."),
+        ("--tree", "Print the registered command tree."),
+    ]
+    children = _click_group_children(command)
+    total_entries = len(root_entries) + len(children)
+    entry_index = 0
+    for option, help_text in root_entries:
+        entry_index += 1
+        connector = "└── " if entry_index == total_entries else "├── "
+        lines.append(f"{connector}{option} # {help_text}")
+    for name, child in children:
+        entry_index += 1
+        lines.extend(
+            _render_click_command(
+                child,
+                name,
+                is_last=entry_index == total_entries,
+            )
+        )
+    return "\n".join(lines)
+
+
+def _print_cli_tree(ctx: click.Context, param: click.Parameter, value: bool) -> None:
+    if not value or ctx.resilient_parsing:
+        return None
+    click.echo(render_cli_tree(ctx.command))
+    ctx.exit()
+
+
 # ── 顶层命令组 ────────────────────────────────────────────────────────────────
 
-@click.group()
-@click.version_option(package_name="chatgame")
+@click.group(name="chatgame")
+@click.version_option(version=__version__, prog_name="chatgame")
+@click.option(
+    "--tree",
+    is_flag=True,
+    is_eager=True,
+    expose_value=False,
+    callback=_print_cli_tree,
+    help="Print the registered command tree.",
+)
 def main() -> None:
     """chatgame — 游戏谜题求解工具。"""
 

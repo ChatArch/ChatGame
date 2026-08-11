@@ -2,56 +2,94 @@ name: Publish Package
 
 on:
   push:
-    tags: ["v*"]
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
-      id-token: write   # OIDC trusted publishing
+      contents: read
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: pip
 
-      - name: Verify tag matches package version
+      - name: Resolve package version
+        id: version
         run: |
-          tag="${GITHUB_REF_NAME#v}"
-          pkg_ver="$(python3 -c "
-          import ast, pathlib
-          src = pathlib.Path('src/chatgame/__init__.py').read_text()
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import ast
+          from pathlib import Path
+          src = Path("src/chatgame/__init__.py").read_text(encoding="utf-8")
+          version = None
           for node in ast.parse(src).body:
               if isinstance(node, ast.Assign):
-                  for t in node.targets:
-                      if isinstance(t, ast.Name) and t.id == '__version__':
-                          print(ast.literal_eval(node.value)); break
-          ")"
-          if [ "$tag" != "$pkg_ver" ]; then
-            echo "Tag $GITHUB_REF_NAME != package version $pkg_ver"
+                  for target in node.targets:
+                      if isinstance(target, ast.Name) and target.id == "__version__":
+                          version = ast.literal_eval(node.value)
+                          break
+          if not version:
+              raise SystemExit("Could not resolve chatgame __version__")
+          print(f"package_version={version}")
+          PY
+
+      - name: Check tag matches package version
+        run: |
+          tag_name="${GITHUB_REF_NAME}"
+          if [ "${GITHUB_REF_TYPE}" != "tag" ]; then
+            echo "Publish workflow must run from a tag ref, got ${GITHUB_REF_TYPE}:${GITHUB_REF_NAME}"
             exit 1
           fi
-          echo "PACKAGE_VERSION=$pkg_ver" >> "$GITHUB_ENV"
+          expected="v${{ steps.version.outputs.package_version }}"
+          if [ "${tag_name}" != "${expected}" ]; then
+            echo "Tag ${tag_name} != expected ${expected}"
+            exit 1
+          fi
 
-      - name: Check version not already on PyPI
+      - name: Check release commit is on default branch
+        run: |
+          git fetch origin main --tags
+          if ! git merge-base --is-ancestor "${GITHUB_SHA}" "origin/main"; then
+            echo "Release commit ${GITHUB_SHA} is not contained in origin/main"
+            exit 1
+          fi
+
+      - name: Check PyPI version
         run: |
           python3 - <<'PY'
-          import os, sys, urllib.request, urllib.error
-          pkg, ver = "chatgame", os.environ["PACKAGE_VERSION"]
+          import os
+          import sys
+          import urllib.error
+          import urllib.request
+
+          package = "chatgame"
+          version = os.environ["PACKAGE_VERSION"]
+          url = f"https://pypi.org/pypi/{package}/{version}/json"
           try:
-              urllib.request.urlopen(f"https://pypi.org/pypi/{pkg}/{ver}/json")
-              print(f"{pkg} {ver} already on PyPI — bump version before tagging")
-              sys.exit(1)
-          except urllib.error.HTTPError as e:
-              if e.code == 404:
-                  print(f"{pkg} {ver} not yet on PyPI — proceeding")
-              else:
-                  raise
+              urllib.request.urlopen(url, timeout=20)
+          except urllib.error.HTTPError as exc:
+              if exc.code == 404:
+                  print(f"{package} {version} not yet on PyPI — proceeding")
+                  sys.exit(0)
+              raise
+          print(f"Fail when version is already on PyPI: {package} {version}")
+          sys.exit(1)
           PY
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.package_version }}
 
       - name: Install build tools
         run: |
@@ -63,7 +101,8 @@ jobs:
       - name: Verify wheel contains packaged web assets
         run: |
           python - <<'PY'
-          import pathlib, zipfile
+          import pathlib
+          import zipfile
           wheels = sorted(pathlib.Path("dist").glob("*.whl"))
           assert wheels, "No wheel produced"
           with zipfile.ZipFile(wheels[0]) as zf:

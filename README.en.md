@@ -5,7 +5,7 @@
     <a href="https://github.com/ChatArch/ChatGame/actions/workflows/ci.yml">
         <img src="https://github.com/ChatArch/ChatGame/actions/workflows/ci.yml/badge.svg" alt="Tests" />
     </a>
-    <a href="https://chatarch.github.io/ChatGame/">
+    <a href="https://arch.gh.wzhecnu.cn/ChatGame/">
         <img src="https://img.shields.io/badge/docs-mkdocs-blue.svg" alt="Documentation" />
     </a>
 </div>
@@ -15,35 +15,48 @@
 [English](README.en.md) | [简体中文](README.md)
 </div>
 
-# chatgame
+# ChatGame
 
-chatgame package
+ChatGame solves game puzzles from screenshots: it parses a board, prints solving steps, and provides an installed-mode Web UI.
 
 ## Quick Start
 
 ```bash
-pip install -e ".[dev]"
-chatgame hello ChatArch
+pip install chatgame
+chatgame --version
+chatgame --tree
+chatgame games
+chatgame solve level24.png -o solved.png
+chatgame web setup
+chatgame web serve
+```
+
+## Current CLI
+
+```text
+chatgame # chatgame — 游戏谜题求解工具。
+├── games
+├── solve IMAGE [--game GAME] [--size SIZE] [--output OUTPUT] [--verbose]
+└── web
+    ├── web serve [--host HOST] [--port PORT] [--reload]
+    └── web setup
+```
+
+Full command tree: https://arch.gh.wzhecnu.cn/ChatGame/en/cli-tree/
+
+## Documentation
+
+- Home: https://arch.gh.wzhecnu.cn/ChatGame/en/
+- CLI tree: https://arch.gh.wzhecnu.cn/ChatGame/en/cli-tree/
+- Chinese docs: https://arch.gh.wzhecnu.cn/ChatGame/
+
+## Development Checks
+
+```bash
+pip install -e ".[dev,docs]"
 python -m pytest -q
+mkdocs build --strict
 python -m build
 ```
 
-## CLI Contract
-
-This template depends on `chatstyle>=0.1.0` and `chatenv>=0.1.1`. New commands should prefer:
-
-- `CommandSchema` / `CommandField` for inputs.
-- `add_interactive_option()` for the shared `-i/-I` switch.
-- `resolve_command_inputs()` for missing args, defaults, TTY behavior, and validation.
-
-## Layout
-
-- `src/`: package source code
-- `tests/code-tests/`: code tests and migrated historical tests
-- `tests/cli-tests/`: real CLI tests, doc-first
-- `tests/mock-cli-tests/`: mock/fake CLI tests, doc-first
-- `docs/`: long-lived project docs built by mkdocs
-
-## Development Notes
-
-See `DEVELOP.md` and `AGENTS.md` before expanding the scaffold.
+See `DEVELOP.md` and `AGENTS.md` before extending the package.
