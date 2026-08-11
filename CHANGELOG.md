@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.11 - 2026-08-12
+
+### Fixed
+
+- Fix the tag-triggered publish workflow guard so it fetches the default branch without re-fetching tags, avoiding annotated-tag checkout conflicts before the PyPI upload step.
+- Align the Trusted Publishing workflow with the active PyPI publisher row that accepts any GitHub environment for `ChatArch/ChatGame` + `publish.yml`.
+
+### Notes
+
+- Carries forward the `0.1.10` CLI tree and MkDocs release content; `v0.1.10` failed before upload and was not published to PyPI.
+
 ## 0.1.10 - 2026-08-12
 
 ### Added

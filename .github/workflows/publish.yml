@@ -12,7 +12,6 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: pypi
     permissions:
       contents: read
       id-token: write
@@ -61,7 +60,7 @@ jobs:
 
       - name: Check release commit is on default branch
         run: |
-          git fetch origin main --tags
+          git fetch --no-tags origin main:refs/remotes/origin/main
           if ! git merge-base --is-ancestor "${GITHUB_SHA}" "origin/main"; then
             echo "Release commit ${GITHUB_SHA} is not contained in origin/main"
             exit 1

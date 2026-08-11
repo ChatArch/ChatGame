@@ -4,9 +4,10 @@ from pathlib import Path
 def test_publish_workflow_uses_trusted_publishing_with_release_guards():
     workflow = Path(".github/workflows/publish.yml").read_text(encoding="utf-8")
 
-    assert "environment: pypi" in workflow
     assert "id-token: write" in workflow
     assert "pypa/gh-action-pypi-publish@release/v1" in workflow
+    assert "git fetch --no-tags origin main:refs/remotes/origin/main" in workflow
+    assert "git fetch origin main --tags" not in workflow
     assert "Resolve package version" in workflow
     assert "Check tag matches package version" in workflow
     assert "Check release commit is on default branch" in workflow
