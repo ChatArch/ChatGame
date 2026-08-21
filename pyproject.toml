@@ -10,9 +10,8 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 dependencies = [
-    "click>=8.0",
-    "chatstyle>=0.1.0",
-    "chatenv>=0.1.1",
+    "click>=8.0,<9.0",
+    "chatstyle>=0.2.0,<0.3.0",
     "pillow>=9.0",
     "scikit-learn>=1.0",
     "numpy>=1.23",
@@ -37,7 +36,7 @@ chatgame = "chatgame.cli:main"
 
 [project.optional-dependencies]
 dev = ["build", "httpx", "pytest", "pytest-mock", "twine"]
-docs = ["mkdocs>=1.6,<2.0", "mkdocs-material>=9.5,<10.0", "mkdocs-static-i18n>=1.2,<2.0", "mike>=2.0,<3.0"]
+docs = ["mkdocs>=1.6,<2.0", "mkdocs-material>=9.5,<9.7", "mkdocs-static-i18n>=1.2,<2.0", "mike>=2.0,<3.0"]
 
 [tool.setuptools.dynamic]
 version = {attr = "chatgame.__version__"}

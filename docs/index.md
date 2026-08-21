@@ -29,7 +29,8 @@ chatgame solve level24.png -o solved.png
 
 | 功能 | 命令 |
 |------|------|
-| 查看真实命令树 | `chatgame --tree` |
+| 查看含参数签名的真实命令树 | `chatgame --tree` |
+| 查看省略参数签名的简要命令树 | `chatgame --tree-brief` |
 | 截图求解，打印点击顺序 | `chatgame solve <图片>` |
 | 保存标注图（数字叠加） | `chatgame solve <图片> -o <输出>` |
 | 查看支持的游戏 | `chatgame games` |

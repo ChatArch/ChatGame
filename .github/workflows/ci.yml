@@ -24,6 +24,12 @@ jobs:
       - name: Run Python tests
         run: python -m pytest -q
 
+      - name: Verify source CLI contract
+        run: |
+          chatgame --version
+          chatgame --tree
+          chatgame --tree-brief
+
   frontend:
     runs-on: ubuntu-latest
     steps:
@@ -126,8 +132,11 @@ jobs:
       - name: Build package
         run: |
           python -m pip install --upgrade pip
-          pip install build
+          pip install build twine
           python -m build
+
+      - name: Check package metadata
+        run: python -m twine check dist/*
 
       - name: Verify wheel contains packaged web assets
         run: |
@@ -182,6 +191,13 @@ jobs:
 
       - name: Install built wheel
         run: pip install dist/*.whl
+
+      - name: Verify installed CLI contract
+        working-directory: ${{ runner.temp }}
+        run: |
+          chatgame --version
+          chatgame --tree
+          chatgame --tree-brief
 
       - name: Verify setup in installed environment
         working-directory: ${{ runner.temp }}

@@ -3,7 +3,10 @@ import importlib
 import sys
 
 from click.testing import CliRunner
+from chatstyle import render_click_tree
 from conftest import IMG_8x8, IMG_10x10
+
+from chatgame import __version__
 from chatgame.cli import main
 
 
@@ -11,7 +14,7 @@ def test_version_option_reports_package_version():
     result = CliRunner().invoke(main, ["--version"])
 
     assert result.exit_code == 0
-    assert "0.1.11" in result.output
+    assert f"chatgame, version {__version__}" in result.output
 
 
 def test_top_level_help_command():
@@ -19,6 +22,7 @@ def test_top_level_help_command():
 
     assert result.exit_code == 0
     assert "--tree" in result.output
+    assert "--tree-brief" in result.output
     assert "solve" in result.output
     assert "games" in result.output
     assert "web" in result.output
@@ -44,14 +48,40 @@ def test_tree_option_renders_registered_command_surface_without_eager_import(mon
         importlib.import_module("chatgame.cli")
 
     assert result.exit_code == 0
-    assert "chatgame # chatgame — 游戏谜题求解工具。" in result.output
-    assert "--tree # Print the registered command tree." in result.output
-    assert "solve IMAGE" in result.output
-    assert "games # 列出已支持的游戏。" in result.output
-    assert "web # Web 服务管理（后端 + 前端）。" in result.output
-    assert "web setup # 检查 Web 运行环境。" in result.output
-    assert "web serve" in result.output
+    assert result.output.strip() == render_click_tree(main, root_name="chatgame")
+    assert result.output.splitlines()[0] == "chatgame"
+    assert result.output.splitlines().count("chatgame") == 1
+    assert "--tree  # Print the registered CLI tree and exit." in result.output
+    assert "--tree-brief  # Print the registered CLI tree without parameter signatures and exit." in result.output
+    assert "solve <IMAGE>" in result.output
+    assert "games  # 列出已支持的游戏；只读文本输出。" in result.output
+    assert "web  # 管理安装态 Web 服务（后端 + 前端）。" in result.output
+    assert "setup  # 检查 Web 运行环境；只读状态输出。" in result.output
+    assert "serve [--host HOST]" in result.output
     assert "hello" not in result.output.lower()
+
+
+def test_tree_brief_renders_same_surface_without_signatures():
+    result = CliRunner().invoke(main, ["--tree-brief"])
+
+    assert result.exit_code == 0
+    assert result.output.strip() == render_click_tree(main, root_name="chatgame", brief=True)
+    assert "games  # 列出已支持的游戏；只读文本输出。" in result.output
+    assert "solve  # 解析截图并输出求解步骤；--output 写入标注图。" in result.output
+    assert "web  # 管理安装态 Web 服务（后端 + 前端）。" in result.output
+    assert "serve  # 启动长驻 Web 服务；监听指定地址和端口。" in result.output
+    assert "setup  # 检查 Web 运行环境；只读状态输出。" in result.output
+    assert "<IMAGE>" not in result.output
+    assert "[--game GAME]" not in result.output
+    assert "[--host HOST]" not in result.output
+
+
+def test_tree_root_uses_public_console_command_in_module_mode():
+    result = CliRunner().invoke(main, ["--tree"], prog_name="python -m chatgame.cli")
+
+    assert result.exit_code == 0
+    assert result.output.splitlines()[0] == "chatgame"
+    assert "python -m chatgame.cli" not in result.output
 
 
 def test_help_does_not_eager_import_solver(monkeypatch):
@@ -73,7 +103,7 @@ def test_help_does_not_eager_import_solver(monkeypatch):
         importlib.import_module("chatgame.cli")
 
     assert result.exit_code == 0
-    assert "启动 Web 服务" in result.output
+    assert "启动长驻 Web 服务" in result.output
 
 
 def test_unknown_command_reports_click_error():
