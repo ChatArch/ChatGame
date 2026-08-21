@@ -16,6 +16,7 @@ pip install chatgame
 chatgame --version
 chatgame --help
 chatgame --tree
+chatgame --tree-brief
 
 chatgame games
 chatgame solve <IMAGE> [-g] [-n] [-o] [-v]
@@ -28,12 +29,13 @@ chatgame web serve [--host] [--port] [--reload]
 
 ## 求解类
 
-### `chatgame --tree`
+### `chatgame --tree` / `chatgame --tree-brief`
 
-打印真实注册的命令树；完整说明见 [CLI 树](cli-tree.md)。
+打印真实注册的命令树。`--tree` 包含参数签名，`--tree-brief` 显示同一命令面但省略签名；完整说明见 [CLI 树](cli-tree.md)。
 
 ```bash
 chatgame --tree
+chatgame --tree-brief
 ```
 
 ### `chatgame games`

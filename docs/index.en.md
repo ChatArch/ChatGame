@@ -25,7 +25,8 @@ chatgame solve level24.png -o solved.png
 
 | Feature | Command |
 |---------|---------|
-| Show the real command tree | `chatgame --tree` |
+| Show the real command tree with signatures | `chatgame --tree` |
+| Show the brief command tree without signatures | `chatgame --tree-brief` |
 | Solve screenshot, print click order | `chatgame solve <image>` |
 | Save annotated image (numbers on grid) | `chatgame solve <image> -o <output>` |
 | List supported games | `chatgame games` |

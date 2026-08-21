@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.12 - 2026-08-21
+
+### Added
+
+- Add `chatgame --tree-brief`, which renders the same registered command surface as `--tree` without parameter signatures.
+- Add full/brief tree contract tests and installed-console-script CI readbacks.
+
+### Changed
+
+- Replace the package-local Click tree renderer with ChatStyle `add_tree_option()` and require `chatstyle>=0.2.0,<0.3.0`.
+- Make the public `chatgame` root name explicit and describe leaf outputs and side effects in the registered tree.
+- Remove the unused ChatEnv runtime dependency because ChatGame has no env/profile/config behavior.
+- Bound Click and MkDocs Material to the supported compatibility ranges.
+
 ## 0.1.11 - 2026-08-12
 
 ### Fixed

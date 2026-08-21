@@ -1,6 +1,17 @@
 from pathlib import Path
 
 
+def test_ci_checks_package_and_source_and_installed_cli_contracts():
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert "python -m pytest -q" in workflow
+    assert "python -m build" in workflow
+    assert "python -m twine check dist/*" in workflow
+    assert workflow.count("chatgame --version") >= 2
+    assert workflow.count("chatgame --tree\n") >= 2
+    assert workflow.count("chatgame --tree-brief") >= 2
+
+
 def test_publish_workflow_uses_trusted_publishing_with_release_guards():
     workflow = Path(".github/workflows/publish.yml").read_text(encoding="utf-8")
 

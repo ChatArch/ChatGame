@@ -25,6 +25,7 @@ ChatGame solves game puzzles from screenshots: it parses a board, prints solving
 pip install chatgame
 chatgame --version
 chatgame --tree
+chatgame --tree-brief
 chatgame games
 chatgame solve level24.png -o solved.png
 chatgame web setup
@@ -33,13 +34,19 @@ chatgame web serve
 
 ## Current CLI
 
+This is the registered `chatgame --tree-brief` surface. Run `chatgame --tree` to include parameter signatures.
+
 ```text
-chatgame # chatgame — 游戏谜题求解工具。
-├── games
-├── solve IMAGE [--game GAME] [--size SIZE] [--output OUTPUT] [--verbose]
-└── web
-    ├── web serve [--host HOST] [--port PORT] [--reload]
-    └── web setup
+chatgame
+├── --help  # Show this message and exit.
+├── --version  # Show the version and exit.
+├── --tree  # Print the registered CLI tree and exit.
+├── --tree-brief  # Print the registered CLI tree without parameter signatures and exit.
+├── games  # 列出已支持的游戏；只读文本输出。
+├── solve  # 解析截图并输出求解步骤；--output 写入标注图。
+└── web  # 管理安装态 Web 服务（后端 + 前端）。
+    ├── serve  # 启动长驻 Web 服务；监听指定地址和端口。
+    └── setup  # 检查 Web 运行环境；只读状态输出。
 ```
 
 Full command tree: https://arch.gh.wzhecnu.cn/ChatGame/en/cli-tree/
