@@ -15,10 +15,15 @@ def _text_blocks(path: Path) -> list[str]:
 
 def test_runtime_and_docs_dependency_contract():
     pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
+    auth_source = Path("src/chatgame/auth.py").read_text(encoding="utf-8")
 
     assert '"click>=8.0,<9.0"' in pyproject
     assert '"chatstyle>=0.2.0,<0.3.0"' in pyproject
-    assert '"chatenv' not in pyproject
+    assert "from chatlogin.fastapi import" in auth_source
+    assert "from chatlogin.ui import" in auth_source
+    assert '"chatlogin[web]>=0.1.3,<0.2.0"' in pyproject
+    assert '"chatenv>=0.2.11,<0.3.0"' in pyproject
+    assert '[project.entry-points."chatenv.configs"]' in pyproject
     assert '"mkdocs-material>=9.5,<9.7"' in pyproject
 
 

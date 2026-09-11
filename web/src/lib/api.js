@@ -43,3 +43,19 @@ export async function fetchJson(path, options = {}, timeoutMs = 8000) {
     window.clearTimeout(timeout)
   }
 }
+
+export function csrfHeaders(session) {
+  return session?.csrf_token ? { 'x-csrf-token': session.csrf_token } : {}
+}
+
+export async function fetchAuthBootstrap() {
+  return fetchJson('/api/auth/bootstrap', { credentials: 'same-origin' })
+}
+
+export async function logoutAuth(session) {
+  return fetchJson('/api/auth/logout', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: csrfHeaders(session),
+  })
+}

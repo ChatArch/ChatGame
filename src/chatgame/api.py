@@ -23,12 +23,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from PIL import Image
 
+from chatgame import __version__
+from chatgame.auth import get_auth
 from chatgame.web.paths import has_static_assets, package_static_dir
 
 logger = logging.getLogger("chatgame.api")
 logger.setLevel(logging.INFO)
 
-app = FastAPI(title="chatgame API", version="0.1.9")
+app = FastAPI(title="chatgame API", version=__version__)
 
 app.add_middleware(
     CORSMiddleware,
@@ -418,6 +420,83 @@ async def log_requests(request: Request, call_next):
 @app.get("/api/health")
 def health():
     return {"status": "ok"}
+
+
+def _require_auth_service():
+    try:
+        auth = get_auth()
+    except ValueError as exc:
+        logger.warning("auth.configuration_error: %s", exc)
+        raise HTTPException(503, "ChatGame authentication is misconfigured") from exc
+    if auth is None:
+        raise HTTPException(404, "ChatGame authentication is not configured")
+    return auth
+
+
+@app.get("/api/auth/bootstrap")
+async def auth_bootstrap(request: Request):
+    try:
+        auth = get_auth()
+    except ValueError as exc:
+        logger.warning("auth.configuration_error: %s", exc)
+        raise HTTPException(503, "ChatGame authentication is misconfigured") from exc
+    if auth is None:
+        return {
+            "auth_available": False,
+            "identity": "guest",
+            "login_url": None,
+            "session_url": None,
+            "logout_url": None,
+            "authenticated": False,
+            "user": None,
+            "csrf_token": None,
+        }
+    response = await auth.session(request)
+    payload = json.loads(response.body.decode("utf-8"))
+    return {
+        "auth_available": True,
+        "identity": "authenticated" if payload.get("authenticated") else "guest",
+        "login_url": "/login",
+        "session_url": "/api/auth/session",
+        "logout_url": "/api/auth/logout",
+        **payload,
+    }
+
+
+@app.get("/api/auth/session")
+async def auth_session(request: Request):
+    try:
+        auth = get_auth()
+    except ValueError as exc:
+        logger.warning("auth.configuration_error: %s", exc)
+        raise HTTPException(503, "ChatGame authentication is misconfigured") from exc
+    if auth is None:
+        return {"authenticated": False, "user": None, "csrf_token": None, "identity": "guest"}
+    response = await auth.session(request)
+    payload = json.loads(response.body.decode("utf-8"))
+    payload["identity"] = "authenticated" if payload.get("authenticated") else "guest"
+    return payload
+
+
+@app.post("/api/auth/login")
+async def auth_login(request: Request):
+    return await _require_auth_service().login(request)
+
+
+@app.post("/api/auth/logout")
+async def auth_logout(request: Request):
+    return await _require_auth_service().logout(request)
+
+
+@app.get("/login", include_in_schema=False)
+async def auth_login_page(request: Request, next: str | None = None):
+    return await _require_auth_service().login_page(request, next=next)
+
+
+@app.get("/api/auth/assets/{name}", include_in_schema=False)
+@app.get("/login/assets/{name}", include_in_schema=False)
+async def auth_asset(name: str):
+    return await _require_auth_service().asset(name)
 
 
 @app.get("/games")

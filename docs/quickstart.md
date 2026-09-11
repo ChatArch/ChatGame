@@ -24,7 +24,7 @@ pip install chatgame
 
 ```bash
 chatgame --version
-# chatgame, version 0.1.12
+# chatgame, version 0.1.13
 chatgame --tree
 chatgame --tree-brief
 ```
@@ -83,7 +83,7 @@ chatgame web setup
 
 ```
 ── Python 环境
-  ✓  chatgame 0.1.12
+  ✓  chatgame 0.1.13
   ✓  fastapi 0.136.1
   ✓  uvicorn 0.47.0
 
@@ -106,6 +106,17 @@ chatgame web serve
 ```
 
 打开浏览器访问 **http://localhost:8000**，即可使用 Web 界面求解游戏。
+
+默认无需登录；上传截图、求解和接入申请仍以访客身份可用。配置共享账号后才会显示登录入口，会话和 CSRF 数据保存在 `~/.chatarch/chatgame`。认证字段完全缺省时才会禁用登录；只填一部分账号字段或写入无效 TTL 会作为配置错误处理：
+
+```env
+CHATGAME_AUTH_USERNAME='solver'
+CHATGAME_AUTH_PASSWORD_PBKDF2='pbkdf2_sha256$600000$base64_salt$base64_digest'
+CHATGAME_AUTH_USER_ID='solver-account'
+CHATGAME_AUTH_DISPLAY_NAME='Puzzle Solver'
+CHATGAME_AUTH_ORIGIN='http://localhost:8000'
+CHATGAME_AUTH_TTL_SECONDS='86400'
+```
 
 ```bash
 # 自定义端口

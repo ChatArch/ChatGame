@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.1.13 - 2026-09-12
+
+### Added
+
+- Add optional shared ChatLogin authentication for the Web UI. When a ChatGame account is explicitly configured through ChatEnv/env values, the app exposes `/login`, `/api/auth/bootstrap`, `/api/auth/session`, `/api/auth/login`, and `/api/auth/logout`.
+- Add a real Web navigation session affordance that shows guest identity when auth is unavailable, hides dead login controls, and logs out with the shared CSRF token when authenticated.
+
+### Changed
+
+- Keep anonymous screenshot solving and contribution endpoints public while using ChatLogin session storage under `~/.chatarch/chatgame`.
+- Register a small ChatEnv `ChatGame` config schema and add bounded `chatlogin`/`chatenv` runtime dependencies.
+- Align the FastAPI app version with the package version.
+
+### Fixed
+
+- Treat partial or malformed ChatGame auth configuration as an error instead of silently falling back to disabled guest mode, and show a retryable Web auth status error when bootstrap fails.
+
 ## 0.1.12 - 2026-08-21
 
 ### Added

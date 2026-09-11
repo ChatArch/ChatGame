@@ -12,6 +12,8 @@ license = "MIT"
 dependencies = [
     "click>=8.0,<9.0",
     "chatstyle>=0.2.0,<0.3.0",
+    "chatlogin[web]>=0.1.3,<0.2.0",
+    "chatenv>=0.2.11,<0.3.0",
     "pillow>=9.0",
     "scikit-learn>=1.0",
     "numpy>=1.23",
@@ -33,6 +35,9 @@ Documentation = "https://arch.gh.wzhecnu.cn/ChatGame/"
 
 [project.scripts]
 chatgame = "chatgame.cli:main"
+
+[project.entry-points."chatenv.configs"]
+chatgame = "chatgame.auth"
 
 [project.optional-dependencies]
 dev = ["build", "httpx", "pytest", "pytest-mock", "twine"]
