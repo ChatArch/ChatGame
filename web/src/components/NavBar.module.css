@@ -37,6 +37,13 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.error {
+  color: #b42318;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .session a,
 .session button {
   border: 1px solid var(--border);
@@ -67,7 +74,8 @@
     padding: 6px 8px;
     font-size: 12px;
   }
-  .identity { max-width: 72px; }
+  .identity,
+  .error { max-width: 72px; }
   .session {
     gap: 4px;
     font-size: 12px;

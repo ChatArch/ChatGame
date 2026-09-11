@@ -13,6 +13,10 @@
 - Register a small ChatEnv `ChatGame` config schema and add bounded `chatlogin`/`chatenv` runtime dependencies.
 - Align the FastAPI app version with the package version.
 
+### Fixed
+
+- Treat partial or malformed ChatGame auth configuration as an error instead of silently falling back to disabled guest mode, and show a retryable Web auth status error when bootstrap fails.
+
 ## 0.1.12 - 2026-08-21
 
 ### Added

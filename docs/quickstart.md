@@ -107,7 +107,7 @@ chatgame web serve
 
 打开浏览器访问 **http://localhost:8000**，即可使用 Web 界面求解游戏。
 
-默认无需登录；上传截图、求解和接入申请仍以访客身份可用。配置共享账号后才会显示登录入口，会话和 CSRF 数据保存在 `~/.chatarch/chatgame`：
+默认无需登录；上传截图、求解和接入申请仍以访客身份可用。配置共享账号后才会显示登录入口，会话和 CSRF 数据保存在 `~/.chatarch/chatgame`。认证字段完全缺省时才会禁用登录；只填一部分账号字段或写入无效 TTL 会作为配置错误处理：
 
 ```env
 CHATGAME_AUTH_USERNAME='solver'

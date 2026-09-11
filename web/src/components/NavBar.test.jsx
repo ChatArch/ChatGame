@@ -77,4 +77,31 @@ describe('NavBar', () => {
     await userEvent.click(login)
     expect(window.confirm).toHaveBeenCalled()
   })
+
+  test('bootstrap errors show retry without treating auth as normally disabled', async () => {
+    const calls = installMockFetch({
+      '/api/auth/bootstrap': vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse({ detail: 'ChatGame authentication is misconfigured' }, { status: 503 }))
+        .mockResolvedValueOnce(jsonResponse({
+          auth_available: true,
+          identity: 'guest',
+          authenticated: false,
+          csrf_token: null,
+          login_url: '/login',
+          user: null,
+        })),
+    })
+
+    render(<MemoryRouter initialEntries={['/solve?grid=draft']}><NavBar /></MemoryRouter>)
+
+    expect(await screen.findByText('认证状态不可用')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: '登录' })).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: '重试' }))
+
+    const login = await screen.findByRole('link', { name: '登录' })
+    expect(login).toHaveAttribute('href', '/login?next=%2Fsolve%3Fgrid%3Ddraft')
+    expect(calls.filter((call) => call.url === '/api/auth/bootstrap')).toHaveLength(2)
+  })
 })

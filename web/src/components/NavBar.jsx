@@ -5,7 +5,22 @@ import styles from './NavBar.module.css'
 
 export default function NavBar() {
   const [session, setSession] = useState(null)
+  const [authError, setAuthError] = useState(false)
+  const [authLoading, setAuthLoading] = useState(true)
   const location = useLocation()
+
+  async function refreshAuthState() {
+    setAuthLoading(true)
+    setAuthError(false)
+    try {
+      const data = await fetchAuthBootstrap()
+      setSession(data)
+    } catch {
+      setAuthError(true)
+    } finally {
+      setAuthLoading(false)
+    }
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -14,9 +29,10 @@ export default function NavBar() {
         if (!cancelled) setSession(data)
       })
       .catch(() => {
-        if (!cancelled) {
-          setSession({ auth_available: false, identity: 'guest', authenticated: false })
-        }
+        if (!cancelled) setAuthError(true)
+      })
+      .finally(() => {
+        if (!cancelled) setAuthLoading(false)
       })
     return () => {
       cancelled = true
@@ -51,7 +67,14 @@ export default function NavBar() {
         <NavLink to="/contribute" className={({ isActive }) => isActive ? styles.active : ''}>接入游戏</NavLink>
       </nav>
       <div className={styles.session}>
-        {session?.auth_available ? (
+        {authError ? (
+          <>
+            <span className={styles.error}>认证状态不可用</span>
+            <button type="button" onClick={refreshAuthState} disabled={authLoading}>
+              {authLoading ? '重试中' : '重试'}
+            </button>
+          </>
+        ) : session?.auth_available ? (
           session.authenticated ? (
             <>
               <span className={styles.identity}>已登录：{session.user?.display_name || session.user?.user_id}</span>

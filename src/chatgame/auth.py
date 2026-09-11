@@ -85,12 +85,34 @@ def _parse_password_hash(value: str) -> PasswordHash:
     return PasswordHash(salt=salt, digest=digest, iterations=iterations)
 
 
+def _parse_ttl(value: str) -> int:
+    try:
+        ttl = int(value)
+    except ValueError as exc:
+        raise ValueError("CHATGAME_AUTH_TTL_SECONDS must be an integer") from exc
+    if ttl <= 0:
+        raise ValueError("CHATGAME_AUTH_TTL_SECONDS must be positive")
+    return ttl
+
+
 def auth_configured(values: dict[str, str] | None = None) -> bool:
     values = values if values is not None else _load_values()
     has_username = bool(values.get("CHATGAME_AUTH_USERNAME"))
     has_hash = bool(values.get("CHATGAME_AUTH_PASSWORD_PBKDF2"))
     if has_username != has_hash:
         raise ValueError("ChatGame auth requires both username and password hash, or neither")
+    if not has_username:
+        has_explicit_auth_metadata = any(
+            bool(values.get(key))
+            for key in (
+                "CHATGAME_AUTH_ORIGIN",
+                "CHATGAME_AUTH_USER_ID",
+                "CHATGAME_AUTH_DISPLAY_NAME",
+            )
+        )
+        if has_explicit_auth_metadata:
+            raise ValueError("ChatGame auth requires username and password hash when auth fields are configured")
+        _parse_ttl(values.get("CHATGAME_AUTH_TTL_SECONDS") or "86400")
     return has_username and has_hash
 
 
@@ -117,12 +139,7 @@ def build_auth(values: dict[str, str] | None = None) -> FastAPIAuth | None:
     username = values["CHATGAME_AUTH_USERNAME"]
     user_id = values.get("CHATGAME_AUTH_USER_ID") or username
     display_name = values.get("CHATGAME_AUTH_DISPLAY_NAME") or username
-    try:
-        ttl = int(values.get("CHATGAME_AUTH_TTL_SECONDS") or "86400")
-    except ValueError as exc:
-        raise ValueError("CHATGAME_AUTH_TTL_SECONDS must be an integer") from exc
-    if ttl <= 0:
-        raise ValueError("CHATGAME_AUTH_TTL_SECONDS must be positive")
+    ttl = _parse_ttl(values.get("CHATGAME_AUTH_TTL_SECONDS") or "86400")
     principal = Principal(user_id=user_id, display_name=display_name, role=Role.USER)
     backend = PasswordBackend({username: (principal, _parse_password_hash(values["CHATGAME_AUTH_PASSWORD_PBKDF2"]))})
     store = SQLiteSessionStore(runtime_dir() / "auth" / "sessions.sqlite3", max_sessions=4096)
