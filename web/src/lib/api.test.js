@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from 'vitest'
 
-import { fetchJson } from './api'
+import { csrfHeaders, fetchAuthBootstrap, fetchJson, logoutAuth } from './api'
 
 describe('fetchJson', () => {
   test('returns parsed JSON for successful responses', async () => {
@@ -34,5 +34,23 @@ describe('fetchJson', () => {
     await vi.advanceTimersByTimeAsync(10)
 
     await request
+  })
+
+  test('auth helpers use same-origin credentials and csrf header', async () => {
+    const calls = []
+    globalThis.fetch = vi.fn(async (path, options = {}) => {
+      calls.push({ path, options })
+      return new Response(JSON.stringify({ ok: true }), { status: 200 })
+    })
+
+    await fetchAuthBootstrap()
+    await logoutAuth({ csrf_token: 'csrf-token' })
+
+    expect(calls[0]).toMatchObject({ path: '/api/auth/bootstrap', options: { credentials: 'same-origin' } })
+    expect(calls[1].path).toBe('/api/auth/logout')
+    expect(calls[1].options.method).toBe('POST')
+    expect(calls[1].options.credentials).toBe('same-origin')
+    expect(calls[1].options.headers).toEqual({ 'x-csrf-token': 'csrf-token' })
+    expect(csrfHeaders(null)).toEqual({})
   })
 })

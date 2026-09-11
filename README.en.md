@@ -32,6 +32,23 @@ chatgame web setup
 chatgame web serve
 ```
 
+## Optional Shared Login
+
+ChatGame does not require login by default, and screenshot upload/solving remains available to anonymous guests. The Web UI shows a login entry only when an operator explicitly configures a shared account; without configuration it shows the guest identity instead of a dead login button.
+
+Configuration uses the ChatEnv `ChatGame` schema or matching environment variables. Store only placeholders in public files and never commit real accounts or plaintext passwords:
+
+```env
+CHATGAME_AUTH_USERNAME='solver'
+CHATGAME_AUTH_PASSWORD_PBKDF2='pbkdf2_sha256$600000$base64_salt$base64_digest'
+CHATGAME_AUTH_USER_ID='solver-account'
+CHATGAME_AUTH_DISPLAY_NAME='Puzzle Solver'
+CHATGAME_AUTH_ORIGIN='http://localhost:8000'
+CHATGAME_AUTH_TTL_SECONDS='86400'
+```
+
+ChatLogin owns session and CSRF state, stored at runtime under `~/.chatarch/chatgame`.
+
 ## Current CLI
 
 This is the registered `chatgame --tree-brief` surface. Run `chatgame --tree` to include parameter signatures.

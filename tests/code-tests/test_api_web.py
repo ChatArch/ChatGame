@@ -1,12 +1,27 @@
 import importlib
 import io
+import base64
+import hashlib
+import os
 import sys
+import time
 
 import numpy as np
 from fastapi.testclient import TestClient
 from PIL import Image
 
 from conftest import IMG_10x10_32660_CROP
+
+
+def _pbkdf2_config(password="secret", *, iterations=1000):
+    salt = os.urandom(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, iterations)
+    return (
+        "pbkdf2_sha256$"
+        f"{iterations}$"
+        f"{base64.b64encode(salt).decode('ascii')}$"
+        f"{base64.b64encode(digest).decode('ascii')}"
+    )
 
 
 def _load_api(monkeypatch, assets_dir=None, disable_ui=False):
@@ -21,14 +36,26 @@ def _load_api(monkeypatch, assets_dir=None, disable_ui=False):
         monkeypatch.delenv("CHATGAME_DISABLE_WEB_UI", raising=False)
 
     sys.modules.pop("chatgame.api", None)
+    sys.modules.pop("chatgame.auth", None)
     module = importlib.import_module("chatgame.api")
     return importlib.reload(module)
+
+
+def _configure_auth(monkeypatch, tmp_path, *, password="secret", ttl="86400"):
+    monkeypatch.setenv("CHATARCH_HOME", str(tmp_path / "home"))
+    monkeypatch.setenv("CHATGAME_AUTH_USERNAME", "solver")
+    monkeypatch.setenv("CHATGAME_AUTH_PASSWORD_PBKDF2", _pbkdf2_config(password))
+    monkeypatch.setenv("CHATGAME_AUTH_USER_ID", "acct-solver")
+    monkeypatch.setenv("CHATGAME_AUTH_DISPLAY_NAME", "Puzzle Solver")
+    monkeypatch.setenv("CHATGAME_AUTH_ORIGIN", "http://testserver")
+    monkeypatch.setenv("CHATGAME_AUTH_TTL_SECONDS", ttl)
 
 
 def test_api_routes_support_prefixed_and_unprefixed_paths(monkeypatch):
     api = _load_api(monkeypatch, disable_ui=True)
     client = TestClient(api.app)
 
+    assert api.app.version == "0.1.13"
     assert client.get("/health").status_code == 200
     assert client.get("/api/health").status_code == 200
 
@@ -56,6 +83,172 @@ def test_api_serves_static_assets_and_spa_fallback(tmp_path, monkeypatch):
     assert "console.log" in client.get("/app.js").text
     assert client.get("/solve-game").status_code == 200
     assert "chatgame" in client.get("/solve-game").text
+
+
+def test_auth_bootstrap_is_guest_without_config_and_solver_stays_public(monkeypatch):
+    api = _load_api(monkeypatch, disable_ui=True)
+    client = TestClient(api.app)
+
+    bootstrap = client.get("/api/auth/bootstrap")
+    login = client.get("/login")
+    response = client.post(
+        "/api/solve",
+        data={"game": "cow-puzzle"},
+        files={
+            "image": (
+                IMG_10x10_32660_CROP.name,
+                IMG_10x10_32660_CROP.read_bytes(),
+                "image/jpeg",
+            )
+        },
+    )
+
+    assert bootstrap.status_code == 200
+    assert bootstrap.json()["auth_available"] is False
+    assert bootstrap.json()["identity"] == "guest"
+    assert bootstrap.json()["login_url"] is None
+    assert login.status_code == 404
+    assert response.status_code == 200
+
+
+def test_configured_auth_login_session_logout_and_csrf(tmp_path, monkeypatch):
+    _configure_auth(monkeypatch, tmp_path)
+    api = _load_api(monkeypatch, disable_ui=True)
+    client = TestClient(api.app)
+
+    bootstrap = client.get("/api/auth/bootstrap")
+    assert bootstrap.status_code == 200
+    assert bootstrap.json()["auth_available"] is True
+    assert bootstrap.json()["identity"] == "guest"
+    assert bootstrap.json()["login_url"] == "/login"
+
+    bad = client.post(
+        "/api/auth/login",
+        json={"username": "solver", "password": "wrong"},
+        headers={"origin": "http://testserver", "sec-fetch-site": "same-origin"},
+    )
+    assert bad.status_code == 401
+
+    logged_in = client.post(
+        "/api/auth/login",
+        json={"username": "solver", "password": "secret"},
+        headers={"origin": "http://testserver", "sec-fetch-site": "same-origin"},
+    )
+    assert logged_in.status_code == 200
+    data = logged_in.json()
+    assert data["authenticated"] is True
+    assert data["user"] == {"user_id": "acct-solver", "display_name": "Puzzle Solver", "role": "user"}
+    assert "secret" not in logged_in.text
+    csrf = data["csrf_token"]
+
+    session = client.get("/api/auth/session")
+    assert session.status_code == 200
+    assert session.json()["identity"] == "authenticated"
+    assert session.json()["user"]["user_id"] == "acct-solver"
+
+    no_csrf = client.post(
+        "/api/auth/logout",
+        headers={"origin": "http://testserver", "sec-fetch-site": "same-origin"},
+    )
+    assert no_csrf.status_code == 403
+
+    logged_out = client.post(
+        "/api/auth/logout",
+        headers={
+            "origin": "http://testserver",
+            "sec-fetch-site": "same-origin",
+            "x-csrf-token": csrf,
+        },
+    )
+    assert logged_out.status_code == 200
+    assert client.get("/api/auth/session").json()["identity"] == "guest"
+
+
+def test_configured_auth_rejects_cross_origin_and_invalid_cookie(tmp_path, monkeypatch):
+    _configure_auth(monkeypatch, tmp_path)
+    api = _load_api(monkeypatch, disable_ui=True)
+    client = TestClient(api.app)
+
+    blocked = client.post(
+        "/api/auth/login",
+        json={"username": "solver", "password": "secret"},
+        headers={"origin": "http://evil.example", "sec-fetch-site": "cross-site"},
+    )
+    assert blocked.status_code == 403
+
+    client.cookies.set("chatgame_session", "not-a-valid-session-token-for-chatgame", domain="testserver")
+    session = client.get("/api/auth/session")
+    assert session.status_code == 200
+    assert session.json()["identity"] == "guest"
+
+
+def test_configured_auth_session_expires_by_ttl(tmp_path, monkeypatch):
+    _configure_auth(monkeypatch, tmp_path, ttl="1")
+    api = _load_api(monkeypatch, disable_ui=True)
+    client = TestClient(api.app)
+
+    logged_in = client.post(
+        "/api/auth/login",
+        json={"username": "solver", "password": "secret"},
+        headers={"origin": "http://testserver", "sec-fetch-site": "same-origin"},
+    )
+    assert logged_in.status_code == 200
+    time.sleep(1.1)
+
+    session = client.get("/api/auth/session")
+
+    assert session.status_code == 200
+    assert session.json()["identity"] == "guest"
+
+
+def test_auth_uses_chatenv_active_config_and_private_runtime_path(tmp_path, monkeypatch):
+    monkeypatch.setenv("CHATARCH_HOME", str(tmp_path / "home"))
+    env_dir = tmp_path / "home" / "envs" / "ChatGame"
+    env_dir.mkdir(parents=True)
+    env_file = env_dir / ".env"
+    env_file.write_text(
+        "\n".join(
+            [
+                "CHATGAME_AUTH_USERNAME='solver'",
+                f"CHATGAME_AUTH_PASSWORD_PBKDF2='{_pbkdf2_config('secret')}'",
+                "CHATGAME_AUTH_USER_ID='acct-solver'",
+                "CHATGAME_AUTH_DISPLAY_NAME='Puzzle Solver'",
+                "CHATGAME_AUTH_ORIGIN='http://testserver'",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    api = _load_api(monkeypatch, disable_ui=True)
+    client = TestClient(api.app)
+
+    assert client.get("/api/auth/bootstrap").json()["auth_available"] is True
+    logged_in = client.post(
+        "/api/auth/login",
+        json={"username": "solver", "password": "secret"},
+        headers={"origin": "http://testserver", "sec-fetch-site": "same-origin"},
+    )
+
+    assert logged_in.status_code == 200
+    runtime_db = tmp_path / "home" / "chatgame" / "auth" / "sessions.sqlite3"
+    assert runtime_db.exists()
+    assert ".chatgame" not in str(runtime_db)
+    assert "secret" not in runtime_db.read_bytes().decode("latin1", errors="ignore")
+
+
+def test_shared_login_ui_and_assets_are_exposed_when_configured(tmp_path, monkeypatch):
+    _configure_auth(monkeypatch, tmp_path)
+    api = _load_api(monkeypatch, disable_ui=True)
+    client = TestClient(api.app)
+
+    page = client.get("/login?next=/solve")
+    script = client.get("/api/auth/assets/login.js")
+
+    assert page.status_code == 200
+    assert "ChatGame" in page.text
+    assert "/api/auth/login" in page.text
+    assert "/solve" in page.text
+    assert script.status_code == 200
+    assert "application/javascript" in script.headers["content-type"]
 
 
 def test_api_reads_game_docs_from_packaged_directory(tmp_path, monkeypatch):

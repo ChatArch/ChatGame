@@ -32,6 +32,23 @@ chatgame web setup
 chatgame web serve
 ```
 
+## 可选共享登录
+
+ChatGame 默认不要求登录，截图上传和求解仍可匿名使用。只有在运维侧显式配置共享账号后，Web UI 才会显示登录入口；未配置时只显示“访客”，不会出现不可用的登录按钮。
+
+账号配置走 ChatEnv 的 `ChatGame` schema 或同名环境变量。密码字段必须是 PBKDF2 字符串，不要把真实账号或明文密码写入仓库：
+
+```env
+CHATGAME_AUTH_USERNAME='solver'
+CHATGAME_AUTH_PASSWORD_PBKDF2='pbkdf2_sha256$600000$base64_salt$base64_digest'
+CHATGAME_AUTH_USER_ID='solver-account'
+CHATGAME_AUTH_DISPLAY_NAME='Puzzle Solver'
+CHATGAME_AUTH_ORIGIN='http://localhost:8000'
+CHATGAME_AUTH_TTL_SECONDS='86400'
+```
+
+会话和 CSRF 数据由 ChatLogin 管理，运行态文件位于 `~/.chatarch/chatgame`。
+
 ## 当前 CLI
 
 以下为 `chatgame --tree-brief` 的注册命令面；`chatgame --tree` 会额外显示参数签名。
